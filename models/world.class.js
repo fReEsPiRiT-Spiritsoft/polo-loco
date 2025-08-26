@@ -15,11 +15,15 @@ class World{
         new backgroundObject('img/5_background/layers/1_first_layer/1.png', 0),
         
     ];
+
     ctx;
     canvas;
-    constructor(canvas){
+    keyboard; ///// aktuelles video bis minute 6!!!
+
+    constructor(canvas, keyboard){
         this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
+        this.keyboard = keyboard;
         this.draw();
     }
 
