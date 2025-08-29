@@ -3,6 +3,7 @@ class Chicken extends MoveableObject {
     y = 350;
     height = 100;
     speed = 0.15 + Math.random() * 0.45;
+    
 
     IMAGES_WALKING = [
         'img/3_enemies_chicken/chicken_normal/1_walk/1_w.png',
@@ -22,11 +23,13 @@ class Chicken extends MoveableObject {
     }
 
     animate() {
-        this.moveLeft();       
+        setInterval(() => {
+            this.moveLeft();    
+        }, 1000 / 60);   
     }
     animateWalk(){
         setInterval(() => {
-            this.playAnimation();
+            this.playAnimation(this.IMAGES_WALKING);
         }, 150);
     }
 }
