@@ -1,5 +1,6 @@
 class World {
     character = new Character();
+    level = level1
     enemies = level1.enemies
     clouds = level1.clouds
     backgroundObjects = level1.backgroundObjects
@@ -15,10 +16,23 @@ class World {
         this.keyboard = keyboard;
         this.draw();
         this.setWorld();
+        this.checkCollisions();
     }
 
     setWorld() {
         this.character.world = this;
+    }
+
+    checkCollisions() {
+        setInterval(() => {
+            this.level.enemies.forEach((enemy) => {
+                if(this.character.isColliding(enemy)) {
+                    this.character.hit();
+                    console.log(`${this.character.energy}`)
+                }
+                // this.character.isDead();
+            })
+        }, 200);
     }
 
     draw() {
@@ -54,7 +68,7 @@ class World {
         mo.draw(this.ctx);
         mo.drawFrame(this.ctx)
         if (mo.otherDirection) {
-            flipImageBack(mo);
+            this.flipImageBack(mo);
         }
     }
 

@@ -1,15 +1,10 @@
-class MoveableObject {
-    x = 120;
-    y = 250;
-    img;
-    height = 150;
-    width = 100;
-    imageCache = {};
-    currentImage = 0;
+class MoveableObject extends DrawableObject {
     speed = 0.2;
     otherDirection = false;
     speedY = 0;
     acceleration = 1;
+    energy = 100;
+    lastHit = 0;
 
     applyGravity() {
         setInterval(() => {
@@ -23,43 +18,52 @@ class MoveableObject {
     isAboveGround() {
         return this.y < 150;
     }
-
-    loadImage(path) {
-        this.img = new Image();
-        this.img.src = path
-    }
-
-    loadImages(arr) {
-        arr.forEach((path) => {
-            let img = new Image();
-            img.src = path;
-            this.imageCache[path] = img;
-
-        });
+    
+    drawFrame(ctx) {
+        if (this instanceof Character || this instanceof Chicken || this instanceof ChickenEndboss) {
+            ctx.beginPath();
+            ctx.lineWidth = '5';
+            ctx.strokeStyle = 'blue';
+            ctx.rect(this.x, this.y, this.width, this.height);
+            ctx.stroke();
+        }
 
     }
 
-    draw(ctx){
-        ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
-
+    isColliding(mo) {
+        return this.x + this.width > mo.x &&
+            this.y + this.height > mo.y &&
+            this.x < mo.x &&
+            this.y < mo.y + mo.height;
     }
-    drawFrame(ctx){
-        ctx.beginPath();
-        ctx.lineWidth = '5';
-        ctx.strokeStyle = 'blue';
-        ctx.rect(this.x, this.y, this.width, this.height);
-        ctx.stroke();
 
+    isDead() {
+        return this.energy == 0;
+    }
+
+    hit() {
+        this.energy -= 5;
+        if (this.energy < 0) {
+            this.energy = 0;
+        } else {
+            this.lastHit = new Date().getTime();
+        }
+    }
+
+    isHurt() {
+        let timepassed = new Date().getTime() - this.lastHit;
+        timepassed = timepassed / 1000;
+        return timepassed < 0.5;
     }
 
     moveRight() {
         this.x += this.speed;
-        
+
     }
 
     moveLeft() {
         this.x -= this.speed;
-        
+
     }
 
     jump() {
