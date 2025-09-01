@@ -1,0 +1,4 @@
+class CollectableBottle extends CollectableObject {
+
+    
+}

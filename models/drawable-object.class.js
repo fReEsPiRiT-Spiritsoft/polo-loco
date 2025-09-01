@@ -6,6 +6,7 @@ class DrawableObject {
     width = 100;
     x = 120;
     y = 250;
+    debugMode = true;
 
 
     loadImage(path) {
@@ -26,6 +27,20 @@ class DrawableObject {
     draw(ctx) {
         ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
 
+    }
+
+    drawFrame(ctx) {
+        if (this.debugMode === true) {
+            if (this instanceof Character || this instanceof Chicken || this instanceof ChickenEndboss || this instanceof ThrowableObject) {
+                ctx.beginPath();
+                ctx.lineWidth = '-1';
+                ctx.strokeStyle = 'blue';
+                ctx.rect(this.x, this.y, this.width, this.height);
+                ctx.stroke();
+            }
+        } else {
+            return;
+        }
     }
 
 

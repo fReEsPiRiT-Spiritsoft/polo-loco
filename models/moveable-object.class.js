@@ -5,6 +5,7 @@ class MoveableObject extends DrawableObject {
     acceleration = 1;
     energy = 100;
     lastHit = 0;
+    groundContact = false;
 
     applyGravity() {
         setInterval(() => {
@@ -16,19 +17,19 @@ class MoveableObject extends DrawableObject {
     }
 
     isAboveGround() {
-        return this.y < 150;
-    }
-    
-    drawFrame(ctx) {
-        if (this instanceof Character || this instanceof Chicken || this instanceof ChickenEndboss) {
-            ctx.beginPath();
-            ctx.lineWidth = '5';
-            ctx.strokeStyle = 'blue';
-            ctx.rect(this.x, this.y, this.width, this.height);
-            ctx.stroke();
+        if (this instanceof ThrowableObject) {
+            if (this.y >= 390) {
+                this.groundContact = true;
+            } else {
+                this.groundContact = false;
+            }
+            return this.y < 390;
+        } else {
+            return this.y < 150;
         }
-
     }
+
+
 
     isColliding(mo) {
         return this.x + this.width > mo.x &&

@@ -9,6 +9,8 @@ class World {
     canvas;
     keyboard;
     camera_x = 0;
+    statusBar = new StatusBar();
+    throwableObjects = [];
 
     constructor(canvas, keyboard) {
         this.ctx = canvas.getContext('2d');
@@ -17,35 +19,62 @@ class World {
         this.draw();
         this.setWorld();
         this.checkCollisions();
+        this.run();
     }
 
     setWorld() {
         this.character.world = this;
     }
 
-    checkCollisions() {
+    run() {
         setInterval(() => {
-            this.level.enemies.forEach((enemy) => {
-                if(this.character.isColliding(enemy)) {
-                    this.character.hit();
-                    console.log(`${this.character.energy}`)
-                }
-                // this.character.isDead();
-            })
+            this.checkCollisions();
+            // this.checkThrowObjects();
         }, 200);
+    }
+
+    checkCollisions() {
+        this.level.enemies.forEach((enemy) => {
+            if (this.character.isColliding(enemy)) {
+                this.character.hit();
+                this.statusBar.setPercentage(this.character.energy);
+                // console.log(`${this.character.energy}`)
+            }
+            // this.character.isDead();
+        });
+    }
+
+    checkThrowObjects() {
+
+        if (this.keyboard.D) {
+            let bottle = new ThrowableObject(
+                this.character.x + 40, // Welt-Koordinate
+                this.character.y + 140
+            );
+            this.throwableObjects.push(bottle);
+        }
+
+
     }
 
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
         this.ctx.translate(this.camera_x, 0);
-
         this.addObjectsToMap(this.backgroundObjects);
         this.addObjectsToMap(this.clouds);
         this.addToMap(this.character);
-        this.addObjectsToMap(this.enemies);
 
+        /////////////////////////////////////
         this.ctx.translate(-this.camera_x, 0);
+        // Screen Fixed Objects Here
+        this.addToMap(this.statusBar);
+        this.ctx.translate(this.camera_x, 0);
+        ///////////////////////////////////////
+
+        this.addObjectsToMap(this.enemies);
+        this.addObjectsToMap(this.throwableObjects)
+        this.ctx.translate(-this.camera_x, 0);
+        
 
         let self = this
         requestAnimationFrame(function () {
@@ -78,8 +107,8 @@ class World {
         this.ctx.scale(-1, 1);
         mo.x = mo.x * -1;
     }
-    flipImageBack(mo){
+    flipImageBack(mo) {
         this.ctx.restore();
-            mo.x = mo.x * -1;
+        mo.x = mo.x * -1;
     }
 }

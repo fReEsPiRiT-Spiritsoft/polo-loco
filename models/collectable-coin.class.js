@@ -1,0 +1,4 @@
+class CollectableCoin extends CollectableObject {
+
+    
+}
