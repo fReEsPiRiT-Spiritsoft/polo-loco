@@ -10,7 +10,11 @@ class World {
     keyboard;
     camera_x = 0;
     statusBar = new StatusBar();
+    coinStatusBar = new CoinStatusBar();
+    bottleStatusBar = new BottleStatusBar();
     throwableObjects = [];
+    collectedBottles = 0;
+    collectedCoins = 0;
 
     constructor(canvas, keyboard) {
         this.ctx = canvas.getContext('2d');
@@ -34,24 +38,80 @@ class World {
     }
 
     checkCollisions() {
+        this.checkChickenStomp();
+        this.checkEnemyCollision();
+        this.checkCollectableCollision();
+        this.checkEnemyBottleCollision();
+    }
+
+    checkEnemyCollision() {
         this.level.enemies.forEach((enemy) => {
-            if (this.character.isColliding(enemy)) {
+            if (this.character.isColliding(enemy) && enemy.energy > 0) {
                 this.character.hit();
                 this.statusBar.setPercentage(this.character.energy);
-                // console.log(`${this.character.energy}`)
             }
-            // this.character.isDead();
         });
     }
 
+    checkChickenStomp() {
+        this.enemies.forEach((enemy) => {
+            if (
+                enemy instanceof Chicken &&
+                this.character.isAboveGround() &&
+                this.character.isColliding(enemy)
+            ) {
+                enemy.energy = 0;
+                this.character.jump();
+                enemy.animateDeath();
+                enemy.markedForRemoval = true;
+            }
+        });
+        this.enemies = this.enemies.filter(enemy => !(enemy.markedForRemoval));
+    }
+
+    checkEnemyBottleCollision() {
+    this.throwableObjects.forEach((bottle) => {
+        this.enemies.forEach((enemy) => {
+            if (bottle.isColliding(enemy) && enemy.energy > 0) {
+                enemy.energy = 0;
+                enemy.animateDeath();
+                enemy.markedForRemoval = true;
+                bottle.markedForRemoval = true;
+            }
+        });
+    });
+    this.enemies = this.enemies.filter(enemy => !enemy.markedForRemoval);
+    this.throwableObjects = this.throwableObjects.filter(bottle => !bottle.markedForRemoval);
+}
+
+    checkCollectableCollision() {
+        this.level.collectableObjects = this.level.collectableObjects.filter(obj => {
+            if (this.character.isColliding(obj)) {
+                if (obj instanceof CollectableCoin) {
+                    this.collectedCoins++;
+                    this.coinStatusBar.setPercentage(this.collectedCoins / 12 * 100);
+                }
+                if (obj instanceof CollectableBottle) {
+                    this.collectedBottles++;
+                    this.bottleStatusBar.setPercentage(this.collectedBottles / 10 * 100);
+                }
+                return false;
+            }
+            return true;
+        });
+    }
+
+
     checkThrowObjects() {
 
-        if (this.keyboard.D) {
+        if (this.keyboard.D && this.collectedBottles > 0) {
             let bottle = new ThrowableObject(
-                this.character.x + 40, // Welt-Koordinate
+                this.character.x + 40,
                 this.character.y + 140
             );
             this.throwableObjects.push(bottle);
+            this.collectedBottles--;
+            this.bottleStatusBar.setPercentage(this.collectedBottles / 10 * 100)
         }
 
 
@@ -62,19 +122,24 @@ class World {
         this.ctx.translate(this.camera_x, 0);
         this.addObjectsToMap(this.backgroundObjects);
         this.addObjectsToMap(this.clouds);
+        this.addObjectsToMap(this.level.collectableObjects);
         this.addToMap(this.character);
+
 
         /////////////////////////////////////
         this.ctx.translate(-this.camera_x, 0);
         // Screen Fixed Objects Here
         this.addToMap(this.statusBar);
+        this.addToMap(this.coinStatusBar);
+        this.addToMap(this.bottleStatusBar);
         this.ctx.translate(this.camera_x, 0);
         ///////////////////////////////////////
 
         this.addObjectsToMap(this.enemies);
         this.addObjectsToMap(this.throwableObjects)
+
         this.ctx.translate(-this.camera_x, 0);
-        
+
 
         let self = this
         requestAnimationFrame(function () {

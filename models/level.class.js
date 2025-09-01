@@ -1,13 +1,17 @@
 class Level{
     enemies;
     clouds;
-    backgroundObjects
+    backgroundObjects;
+    collectableObjects;
 
-    constructor(enemies, clouds, backgroundObjects){
-        this.enemies = enemies;
-        this.clouds = clouds;
-        this.backgroundObjects = backgroundObjects;
-    }
+
+    constructor(enemies, clouds, backgroundObjects, collectableObjects) {
+    this.enemies = enemies;
+    this.clouds = clouds;  
+    this.backgroundObjects = backgroundObjects;
+    this.collectableObjects = collectableObjects;
+    
+}
 
 
 }

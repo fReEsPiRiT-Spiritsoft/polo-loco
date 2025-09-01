@@ -32,11 +32,19 @@ class MoveableObject extends DrawableObject {
 
 
     isColliding(mo) {
-        return this.x + this.width > mo.x &&
-            this.y + this.height > mo.y &&
-            this.x < mo.x &&
-            this.y < mo.y + mo.height;
+    let y = this.y;
+    let height = this.height;
+    if (this instanceof Character) {
+        y += 120; 
+        height -= 80;
     }
+    return (
+        y < mo.y + mo.height &&
+        y + height > mo.y &&
+        this.x < mo.x + mo.width &&
+        this.x + this.width > mo.x
+    );
+}
 
     isDead() {
         return this.energy == 0;

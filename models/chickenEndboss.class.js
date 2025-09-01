@@ -18,7 +18,7 @@ class ChickenEndboss extends MoveableObject {
 
     constructor() {
         super().loadImage('img/4_enemie_boss_chicken/2_alert/G11.png')
-        this.x = 700;
+        this.x = 6400;
         this.loadImages(this.IMAGES_WALKING);
         this.speed;
         this.animate();
