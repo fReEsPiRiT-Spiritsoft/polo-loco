@@ -15,6 +15,7 @@ class World {
     throwableObjects = [];
     collectedBottles = 0;
     collectedCoins = 0;
+    cameraMode = 'character';
 
     constructor(canvas, keyboard) {
         this.ctx = canvas.getContext('2d');
@@ -35,6 +36,16 @@ class World {
             this.checkCollisions();
             // this.checkThrowObjects();
         }, 200);
+    }
+
+    updateCamera() {
+        if (this.cameraMode === 'boss') {
+            // Endboss-Kamera: Character am rechten Rand
+            this.camera_x = -this.endboss.x + this.canvas.width - this.character.width - 100;
+        } else {
+            // Standard: Kamera folgt Character
+            this.camera_x = -this.character.x + 100;
+        }
     }
 
     checkCollisions() {
@@ -63,25 +74,36 @@ class World {
                 enemy.energy = 0;
                 this.character.jump();
                 enemy.animateDeath();
-                enemy.markedForRemoval = true;
+                setTimeout(() => {
+                    enemy.markedForRemoval = true;
+                }, 1000);
             }
         });
         this.enemies = this.enemies.filter(enemy => !(enemy.markedForRemoval));
     }
 
     checkEnemyBottleCollision() {
-    this.throwableObjects.forEach((bottle) => {
-        this.enemies.forEach((enemy) => {
-            if (bottle.isColliding(enemy) && enemy.energy > 0) {
-                enemy.energy = 0;
-                enemy.animateDeath();
-                enemy.markedForRemoval = true;
-                bottle.markedForRemoval = true;
+    this.throwableObjects.forEach(bottle => {
+        if (bottle.markedForRemoval) return;
+        this.enemies.forEach(enemy => {
+            if (enemy.energy > 0 && bottle.isColliding(enemy)) {
+                if (enemy instanceof Chicken) {
+                    enemy.energy = 0;
+                    enemy.animateDeath && enemy.animateDeath();
+                    setTimeout(() => {
+                        enemy.markedForRemoval = true;
+                        bottle.markedForRemoval = true;
+                    }, 500);
+                } else if (enemy instanceof ChickenEndboss) {
+                    enemy.takeBottleHit();
+                    bottle.markedForRemoval = true;
+                }
             }
         });
     });
-    this.enemies = this.enemies.filter(enemy => !enemy.markedForRemoval);
-    this.throwableObjects = this.throwableObjects.filter(bottle => !bottle.markedForRemoval);
+
+    this.enemies = this.enemies.filter(e => !e.markedForRemoval);
+    this.throwableObjects = this.throwableObjects.filter(b => !b.markedForRemoval);
 }
 
     checkCollectableCollision() {
@@ -93,7 +115,7 @@ class World {
                 }
                 if (obj instanceof CollectableBottle) {
                     this.collectedBottles++;
-                    this.bottleStatusBar.setPercentage(this.collectedBottles / 10 * 100);
+                    this.bottleStatusBar.setPercentage(this.collectedBottles / 20 * 100);
                 }
                 return false;
             }
@@ -111,7 +133,7 @@ class World {
             );
             this.throwableObjects.push(bottle);
             this.collectedBottles--;
-            this.bottleStatusBar.setPercentage(this.collectedBottles / 10 * 100)
+            this.bottleStatusBar.setPercentage(this.collectedBottles / 20 * 100)
         }
 
 

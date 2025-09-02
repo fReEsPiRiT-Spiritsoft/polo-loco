@@ -45,7 +45,14 @@ class MoveableObject extends DrawableObject {
         this.x + this.width > mo.x
     );
 }
-
+    death() {
+        this.energy = 0;
+        if (this.IMAGES_DEAD) {
+            this.playAnimation(this.IMAGES_DEAD);
+        }
+        this.markedForRemoval = true;
+    }
+    
     isDead() {
         return this.energy == 0;
     }
