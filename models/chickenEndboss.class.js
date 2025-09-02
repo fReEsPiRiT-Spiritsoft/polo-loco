@@ -239,15 +239,9 @@ class ChickenEndboss extends MoveableObject {
 
     updateFacing(dist) {
         this.otherDirection = dist < 0;
-        if (this.otherDirection && this.x - world.character.x < 0) {
-            this.shiftCameraToCharacterRight();
-
-        }
+        if (this.world) {
+        this.world.cameraMode = 'boss';
     }
-
-    shiftCameraToCharacterRight() {
-        // Character am rechten Rand positionieren
-        this.world.camera_x = -this.x + this.world.canvas.width - this.world.character.width - 100;
     }
 
     takeBottleHit() {
