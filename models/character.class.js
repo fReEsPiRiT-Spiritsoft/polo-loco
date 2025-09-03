@@ -97,22 +97,21 @@ class Character extends MoveableObject {
     }
 
     animate() {
-
         setInterval(() => {
 
             let moved = false;
 
-            if (this.world.keyboard.RIGHT) {
+            if (this.world.keyboard.RIGHT && this.x < 7200 && !this.isDead()) {
                 this.moveRight()
                 this.otherDirection = false;
                 moved = true;
             }
-            if (this.world.keyboard.LEFT && this.x > 0) {
+            if (this.world.keyboard.LEFT && this.x > 0  && !this.isDead()) {
                 this.moveLeft();
                 this.otherDirection = true;
                 moved = true;
             }
-            if (this.world.keyboard.SPACE && !this.isAboveGround()) {
+            if (this.world.keyboard.SPACE && !this.isAboveGround()  && !this.isDead()) {
                 this.jump();
                 moved = true;
             }
@@ -158,6 +157,11 @@ class Character extends MoveableObject {
         this.y = +320;
         this.height = 200;
         this.width = 300;
+        setTimeout(() => {
+        const es = document.getElementById('endscreen');
+        if (es) es.classList.remove('hidden');
+        if (this.world) this.world.paused = true;
+    }, 800);
     }
 
 }

@@ -2,16 +2,10 @@
 class World {
     paused = true;
     character = new Character();
-    // level = level1;
-    // enemies = level1.enemies;
-    // clouds = level1.clouds;
-    // backgroundObjects = level1.backgroundObjects
     level = [];
     enemies = [];
     clouds = [];
     backgroundObjects = [];
-
-
 
     ctx;
     canvas;
@@ -54,6 +48,7 @@ class World {
         this.keyboard = keyboard;
 
         this.level = level1;
+        
         this.enemies = level1.enemies;
         this.clouds = level1.clouds;
         this.backgroundObjects = level1.backgroundObjects;
@@ -152,10 +147,13 @@ class World {
     }
 
     checkCollisions() {
-        this.checkChickenStomp();
-        this.checkEnemyCollision();
-        this.checkCollectableCollision();
-        this.checkEnemyBottleCollision();
+        if (this.paused === false) {
+            this.checkChickenStomp();
+            this.checkEnemyCollision();
+            this.checkCollectableCollision();
+            this.checkEnemyBottleCollision();
+        }
+
     }
 
     checkEnemyCollision() {
@@ -287,7 +285,7 @@ class World {
             this.flipImage(mo);
         }
         mo.draw(this.ctx);
-        mo.drawFrame(this.ctx)
+        // mo.drawFrame(this.ctx)
         if (mo.otherDirection) {
             this.flipImageBack(mo);
         }
