@@ -3,7 +3,36 @@ class Character extends MoveableObject {
     height = 300;
     y = 0;
     speed = 3;
-    energy = 200
+    energy = 100
+    lastAction = 0;
+    longIdleDelay = 5000;
+    
+
+    IMAGES_IDLE = [
+        'img/2_character_pepe/1_idle/idle/I-1.png',
+        'img/2_character_pepe/1_idle/idle/I-2.png',
+        'img/2_character_pepe/1_idle/idle/I-3.png',
+        'img/2_character_pepe/1_idle/idle/I-4.png',
+        'img/2_character_pepe/1_idle/idle/I-5.png',
+        'img/2_character_pepe/1_idle/idle/I-6.png',
+        'img/2_character_pepe/1_idle/idle/I-7.png',
+        'img/2_character_pepe/1_idle/idle/I-8.png',
+        'img/2_character_pepe/1_idle/idle/I-9.png',
+        'img/2_character_pepe/1_idle/idle/I-10.png'
+    ];
+
+    IMAGES_LONG_IDLE = [
+        'img/2_character_pepe/1_idle/long_idle/I-11.png',
+        'img/2_character_pepe/1_idle/long_idle/I-12.png',
+        'img/2_character_pepe/1_idle/long_idle/I-13.png',
+        'img/2_character_pepe/1_idle/long_idle/I-14.png',
+        'img/2_character_pepe/1_idle/long_idle/I-15.png',
+        'img/2_character_pepe/1_idle/long_idle/I-16.png',
+        'img/2_character_pepe/1_idle/long_idle/I-17.png',
+        'img/2_character_pepe/1_idle/long_idle/I-18.png',
+        'img/2_character_pepe/1_idle/long_idle/I-19.png',
+        'img/2_character_pepe/1_idle/long_idle/I-20.png'
+    ];
 
     IMAGES_WALKING = [
         '../img/2_character_pepe/2_walk/W-21.png',
@@ -52,45 +81,83 @@ class Character extends MoveableObject {
         this.loadImages(this.IMAGES_JUMPING);
         this.loadImages(this.IMAGES_DEAD);
         this.loadImages(this.IMAGES_HURT);
+        this.loadImages(this.IMAGES_IDLE);
+        this.loadImages(this.IMAGES_LONG_IDLE);
         this.applyGravity();
+        this.lastAction = performance.now();  
         this.animate();
+    }
+
+    markAction() {
+        this.lastAction = performance.now();
+    }
+
+    isLongIdle() {
+        return (performance.now() - this.lastAction) >= this.longIdleDelay; 
     }
 
     animate() {
 
         setInterval(() => {
+
+            let moved = false;
+
             if (this.world.keyboard.RIGHT) {
                 this.moveRight()
                 this.otherDirection = false;
+                moved = true;
             }
             if (this.world.keyboard.LEFT && this.x > 0) {
                 this.moveLeft();
                 this.otherDirection = true;
+                moved = true;
             }
             if (this.world.keyboard.SPACE && !this.isAboveGround()) {
                 this.jump();
+                moved = true;
+            }
+
+            if (moved) {
+                this.markAction();
             }
 
             this.world.camera_x = -this.x + 100
         }, 1000 / 60);
 
 
-        setInterval(() => {
+        this.animations = setInterval(() => {
             if( this.isHurt()) {
                 this.playAnimation(this.IMAGES_HURT);
             }
            else if (this.isDead()) {
                 this.playAnimation(this.IMAGES_DEAD);
+                setTimeout(() => {
+                    clearInterval(this.animations);
+                    this.showSarg();
+                }, 3000);
             } else if
                 (this.isAboveGround()) {
                 this.playAnimation(this.IMAGES_JUMPING);
             } else {
                 if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) {
                     this.playAnimation(this.IMAGES_WALKING);
+                } else if (this.isLongIdle()) {
+                    this.playAnimation(this.IMAGES_LONG_IDLE);
+                } else {
+                    this.playAnimation(this.IMAGES_IDLE);
                 }
             }
 
         }, 100);
+
+        
+    }
+    showSarg() {
+        clearInterval(this.animations);
+        this.loadImage('img/2_character_pepe/5_dead/D-58.png');
+        this.y = +320;
+        this.height = 200;
+        this.width = 300;
     }
 
 }

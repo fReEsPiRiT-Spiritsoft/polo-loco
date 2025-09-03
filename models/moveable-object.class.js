@@ -32,19 +32,19 @@ class MoveableObject extends DrawableObject {
 
 
     isColliding(mo) {
-    let y = this.y;
-    let height = this.height;
-    if (this instanceof Character) {
-        y += 120; 
-        height -= 80;
+        let y = this.y;
+        let height = this.height;
+        if (this instanceof Character) {
+            y += 120;
+            height -= 100;
+        }
+        return (
+            y < mo.y + mo.height &&
+            y + height > mo.y &&
+            this.x < mo.x + mo.width &&
+            this.x + this.width > mo.x
+        );
     }
-    return (
-        y < mo.y + mo.height &&
-        y + height > mo.y &&
-        this.x < mo.x + mo.width &&
-        this.x + this.width > mo.x
-    );
-}
     death() {
         this.energy = 0;
         if (this.IMAGES_DEAD) {
@@ -52,7 +52,7 @@ class MoveableObject extends DrawableObject {
         }
         this.markedForRemoval = true;
     }
-    
+
     isDead() {
         return this.energy == 0;
     }

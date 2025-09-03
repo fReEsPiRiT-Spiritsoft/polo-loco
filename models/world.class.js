@@ -1,9 +1,12 @@
+
 class World {
     character = new Character();
     level = level1;
     enemies = level1.enemies;
     clouds = level1.clouds;
     backgroundObjects = level1.backgroundObjects
+
+    
 
     ctx;
     canvas;
@@ -25,14 +28,14 @@ class World {
     bossShiftActive = false;
     bossShiftMinHoldUntil = 0; // Mindest-Haltedauer (ms) der Boss-Perspektive
     cameraSmoothFactor = 0.12;   // 0.05 langsamer, 0.2 schneller
-    cameraSnapThreshold = 1.0; 
+    cameraSnapThreshold = 1.0;
 
     // Konfiguration
     BOSS_SHIFT_MAX_DISTANCE = 1200;   // weiter weg? -> nicht verschieben
     BOSS_SHIFT_ACTIVATE_DELTA = 60;   // Boss so viel links vom Character -> aktivieren
     BOSS_SHIFT_DEACTIVATE_DELTA = 20; // Boss kommt wieder näher / rechts -> deaktivieren
     BOSS_SHIFT_MIN_HOLD = 500;        // mindestens so lange halten (ms)
-    
+
     statusBar = new StatusBar();
     coinStatusBar = new CoinStatusBar();
     bottleStatusBar = new BottleStatusBar();
@@ -60,6 +63,7 @@ class World {
             this.checkCollisions();
         }, 200);
     }
+
 
     updateCamera() {
         this.evaluateBossCamera();
@@ -286,3 +290,4 @@ class World {
         mo.x = mo.x * -1;
     }
 }
+

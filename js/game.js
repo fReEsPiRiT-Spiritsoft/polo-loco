@@ -11,9 +11,16 @@ function init() {
         }
     });
 
+}
 
-    console.log('My character is', world.character)
+function startGame() {
+    const s = document.getElementById('startscreen');
+    if (s) s.classList.add('hidden');
+    if (world) world.paused = false;
+}
 
+function restartGame() {
+    location.reload();
 }
 
 window.addEventListener('keydown', (event) => {
@@ -62,3 +69,4 @@ window.addEventListener('keyup', (event) => {
     }
 
 });
+
