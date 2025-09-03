@@ -4,19 +4,15 @@ let keyboard = new Keyboard();
 
 function init() {
     canvas = document.getElementById('canvas');
-    world = new World(canvas, keyboard)
-    world.enemies.forEach(enemy => {
-        if (enemy instanceof ChickenEndboss) {
-            enemy.world = world;
-        }
-    });
-
+    // World hier NOCH NICHT erstellen
 }
 
 function startGame() {
     const s = document.getElementById('startscreen');
-    if (s) s.classList.add('hidden');
-    if (world) world.paused = false;
+    initLevel1();                    // level1 erzeugen
+    world = new World(canvas, keyboard, level1); // jetzt mit Level erstellen
+    world.start();
+    if (s) s.style.display = 'none';
 }
 
 function restartGame() {

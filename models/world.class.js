@@ -1,12 +1,17 @@
 
 class World {
+    paused = true;
     character = new Character();
-    level = level1;
-    enemies = level1.enemies;
-    clouds = level1.clouds;
-    backgroundObjects = level1.backgroundObjects
+    // level = level1;
+    // enemies = level1.enemies;
+    // clouds = level1.clouds;
+    // backgroundObjects = level1.backgroundObjects
+    level = [];
+    enemies = [];
+    clouds = [];
+    backgroundObjects = [];
 
-    
+
 
     ctx;
     canvas;
@@ -24,8 +29,7 @@ class World {
     CAM_LEFT_OFFSET = 100; // dein Standard links
     CAM_RIGHT_OFFSET_EXTRA = 100; // der -100 Teil aus deiner rechten Formel
 
-    // Kamera-Zustand
-    bossShiftActive = false;
+
     bossShiftMinHoldUntil = 0; // Mindest-Haltedauer (ms) der Boss-Perspektive
     cameraSmoothFactor = 0.12;   // 0.05 langsamer, 0.2 schneller
     cameraSnapThreshold = 1.0;
@@ -48,10 +52,20 @@ class World {
         this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
         this.keyboard = keyboard;
+
+        this.level = level1;
+        this.enemies = level1.enemies;
+        this.clouds = level1.clouds;
+        this.backgroundObjects = level1.backgroundObjects;
+
         this.draw();
         this.setWorld();
         this.checkCollisions();
         this.run();
+    }
+
+    start() {
+        this.paused = false;
     }
 
     setWorld() {
