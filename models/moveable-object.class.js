@@ -32,19 +32,31 @@ class MoveableObject extends DrawableObject {
 
 
     isColliding(mo) {
+        let x = this.x;
         let y = this.y;
+        let width = this.width;
         let height = this.height;
+
         if (this instanceof Character) {
             y += 120;
-            height -= 100;
+            height -= 120;
+            x += 15;         // Links 20px weniger
+            width -= 30;     // Rechts 20px weniger (insgesamt 40px schmaler)
+        }
+        if (this instanceof ChickenEndboss) {
+            y += 200;
+            height -= 400;
+            x += 300;         // Links 30px weniger
+            width -= 600;     // Rechts 30px weniger (insgesamt 60px schmaler)
         }
         return (
             y < mo.y + mo.height &&
             y + height > mo.y &&
-            this.x < mo.x + mo.width &&
-            this.x + this.width > mo.x
+            x < mo.x + mo.width &&
+            x + width > mo.x
         );
     }
+
     death() {
         this.energy = 0;
         if (this.IMAGES_DEAD) {
@@ -82,8 +94,8 @@ class MoveableObject extends DrawableObject {
 
     }
 
-    jump() {
-        this.speedY = 20;
+    jump(j) {
+        this.speedY = j;
     }
 
     playAnimation(images) {

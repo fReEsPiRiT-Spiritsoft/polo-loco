@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>El Pollo Loco by P.Schmidt</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rye&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="models/drawable-object.class.js"></script>
     <script src="models/moveable-object.class.js"></script>
@@ -14,6 +15,7 @@
     <script src="models/bottle-status-bar.class.js"></script>
     <script src="models/character.class.js"></script>
     <script src="models/chicken.class.js"></script>
+    <script src="models/miniChicken.class.js"></script>
     <script src="models/chickenEndboss.class.js"></script>
     <script src="models/cloud.class.js"></script>
     <script src="models/keyboard.class.js"></script>
@@ -29,23 +31,40 @@
 
 <body onload="init()">
     <div class="game" style="position:relative; width:720px; height:480px;">
-      <div id="startscreen">
-          <img src="./img/9_intro_outro_screens/start/startscreen_1.png" class="start-image">
-          <button id="btnPlay" onclick="startGame()">PLAY</button>
-      </div>
+        <div id="startscreen">
+            <div class="difficulty-select">
+                <label for="difficulty">Schwierigkeit:</label>
+                <select id="difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </div>
+            <img src="./img/9_intro_outro_screens/start/startscreen_1.png" class="start-image">
+            <button class="btn" id="btnPlay" onclick="startGame()">PLAY</button>
+        </div>
 
-      <div id="endscreen" class="hidden">
-          <img src="img/You won, you lost/You lost b.png" class="end-image">
-          <button onclick="restartGame()">Restart</button>
-      </div>
+        <div id="endscreen" class="hidden">
+            <img src="img/win_lose/looser.png" class="end-image">
+            <button class="btn" onclick="restartGame()">Restart</button>
+        </div>
+        <div id="winningscreen" class="hidden">
+            <img src="img/win_lose/winner.png" class="end-image">
+            <div style="display: flex; gap: 24px; margin-top: 24px;">
+                <button class="btn" onclick="goToMainMenu()">Main Menu</button>
+                <button class="btn" onclick="restartGame()">Try Again</button>
+            </div>
+        </div>
 
-      <canvas id="canvas" width="720" height="480"></canvas>
+        <canvas id="canvas" width="720" height="480"></canvas>
 
-      <div id="ui">
-          <!-- <button class="btn" id="btnRestart" onclick="restartGame()">Restart</button> -->
-      </div>
-  </div>
-  </div>
+        <div class="ui" id="ui">
+            <button class="btn" id="btnRestart" onclick="restartGame()">Restart</button>
+            <button class="btn" id="btnRestart" onclick="toggleFullscreen()">fullscreen</button>
+            <button class="btn" id="btnRestart" onclick="restartGame()">Mute</button>
+        </div>
+    </div>
+    </div>
 </body>
 
 </html>

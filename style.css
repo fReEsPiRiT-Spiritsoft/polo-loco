@@ -31,12 +31,13 @@ body {
 
 
 .game {
-    display: grid;
-    place-items: center
+    position:relative;
+    margin:0 auto;
+    overflow:hidden;
+    background:#000;
 }
-
-canvas {
-    background-color: black;
+.game canvas {
+    display:block;
 }
 
 
@@ -89,7 +90,6 @@ canvas {
     justify-content: center;
     background: rgba(0, 0, 0, 0.25);
     z-index: 15;
-    /* höher als startscreen */
 }
 
 #endscreen img {
@@ -100,9 +100,6 @@ canvas {
     display: none;
 }
 
-/* end-image hast du schon, kann wiederverwendet werden */
-;
-
 .hidden {
     display: none;
 }
@@ -110,8 +107,101 @@ canvas {
 #ui {
     position: absolute;
     top: 8px;
-    left: 8px;
+    right: 16px;
     z-index: 5;
     display: flex;
     gap: 8px;
+}
+.btn {
+    font-family: 'Rye', 'Rock Salt', 'Arial Black', cursive;
+    font-size: 13px;
+    color: #fff8e1;
+    background: linear-gradient(135deg, #a86c3a 0%, #e2b07e 100%);
+    border: 4px solid #6b3a1a;
+    border-radius: 12px;
+    box-shadow: 0 4px 0 #6b3a1a, 0 8px 16px rgba(0, 0, 0, 0.25);
+    text-shadow: 2px 2px #6b3a1a, 0 0 8px #fff8e1;
+    letter-spacing: 3px;
+    padding: 10px 8px;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+    margin: 0px;
+    outline: none;
+}
+
+.btn:hover, .btn:focus {
+    background: linear-gradient(135deg, #e2b07e 0%, #a86c3a 100%);
+    color: #ffd700;
+    transform: translateY(-2px) scale(1.04);
+    box-shadow:
+        0 8px 0 #6b3a1a,
+        0 12px 24px rgba(0,0,0,0.35);
+}
+
+.btn:active {
+    background: #a86c3a;
+    color: #fff8e1;
+    transform: translateY(2px) scale(0.98);
+    box-shadow:
+        0 2px 0 #6b3a1a,
+        0 4px 8px rgba(0,0,0,0.18);
+}
+
+#winningscreen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.25);
+    z-index: 16;
+}
+#winningscreen img {
+    width: 50%;
+}
+#winningscreen.hidden {
+    display: none;
+}
+.difficulty-select {
+    position: absolute;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    background: rgba(165, 105, 50, 0.95);
+    border: 4px solid #6b3a1a;
+    border-radius: 12px;
+    padding: 12px 32px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    font-family: 'Rye', 'Rock Salt', 'Arial Black', cursive;
+    color: #fff8e1;
+    text-align: center;
+}
+
+.difficulty-select label {
+    font-size: 22px;
+    letter-spacing: 2px;
+    margin-right: 12px;
+    color: #ffd700;
+    text-shadow: 1px 1px #6b3a1a;
+}
+
+.difficulty-select select {
+    font-family: inherit;
+    font-size: 20px;
+    background: #e2b07e;
+    color: #6b3a1a;
+    border: 2px solid #6b3a1a;
+    border-radius: 8px;
+    padding: 6px 18px;
+    outline: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.difficulty-select select:focus {
+    background: #ffd700;
+    color: #a86c3a;
 }

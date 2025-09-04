@@ -4,7 +4,8 @@ class ChickenEndboss extends MoveableObject {
     groundY = 150;
     height = 300;
     width = 300;
-    baseSpeed = 1.4;
+    baseSpeed = 9;
+    speed = 9;
 
 
     alerted = false;
@@ -23,57 +24,57 @@ class ChickenEndboss extends MoveableObject {
 
     ALERT_DURATION = 600;
     JUMP_COOLDOWN = 1800;
-    ATTACK_COOLDOWN = 1200;
+    ATTACK_COOLDOWN = 600;
     ATTACK_DISTANCE = 110;
     JUMP_DISTANCE_MIN = 220;
-    JUMP_DISTANCE_MAX = 520;
+    JUMP_DISTANCE_MAX = 1200;
 
     // Jump-Physik
     jumpVy = 0;
-    jumpStartVy = 22;
+    jumpStartVy = 24;
     gravity = 1.2;
 
     // Animation-Sets
     IMAGES_WALKING = [
-        'img/4_enemie_boss_chicken/1_walk/G1.png',
-        'img/4_enemie_boss_chicken/1_walk/G2.png',
-        'img/4_enemie_boss_chicken/1_walk/G3.png',
-        'img/4_enemie_boss_chicken/1_walk/G4.png'
+        'img/4_enemie_boss_chicken/1_walk/g1.png',
+        'img/4_enemie_boss_chicken/1_walk/g2.png',
+        'img/4_enemie_boss_chicken/1_walk/g3.png',
+        'img/4_enemie_boss_chicken/1_walk/g4.png'
     ];
     IMAGES_ALERT = [
-        'img/4_enemie_boss_chicken/2_alert/G5.png',
-        'img/4_enemie_boss_chicken/2_alert/G6.png',
-        'img/4_enemie_boss_chicken/2_alert/G7.png',
-        'img/4_enemie_boss_chicken/2_alert/G8.png',
-        'img/4_enemie_boss_chicken/2_alert/G9.png',
-        'img/4_enemie_boss_chicken/2_alert/G10.png',
-        'img/4_enemie_boss_chicken/2_alert/G11.png',
-        'img/4_enemie_boss_chicken/2_alert/G12.png'
+        'img/4_enemie_boss_chicken/2_alert/g5.png',
+        'img/4_enemie_boss_chicken/2_alert/g6.png',
+        'img/4_enemie_boss_chicken/2_alert/g7.png',
+        'img/4_enemie_boss_chicken/2_alert/g8.png',
+        'img/4_enemie_boss_chicken/2_alert/g9.png',
+        'img/4_enemie_boss_chicken/2_alert/g10.png',
+        'img/4_enemie_boss_chicken/2_alert/g11.png',
+        'img/4_enemie_boss_chicken/2_alert/g12.png'
     ];
     IMAGES_ATTACK = [
-        'img/4_enemie_boss_chicken/3_attack/G13.png',
-        'img/4_enemie_boss_chicken/3_attack/G14.png',
-        'img/4_enemie_boss_chicken/3_attack/G15.png',
-        'img/4_enemie_boss_chicken/3_attack/G16.png',
-        'img/4_enemie_boss_chicken/3_attack/G17.png',
-        'img/4_enemie_boss_chicken/3_attack/G18.png',
-        'img/4_enemie_boss_chicken/3_attack/G19.png',
-        'img/4_enemie_boss_chicken/3_attack/G20.png'
+        'img/4_enemie_boss_chicken/3_attack/g13.png',
+        'img/4_enemie_boss_chicken/3_attack/g14.png',
+        'img/4_enemie_boss_chicken/3_attack/g15.png',
+        'img/4_enemie_boss_chicken/3_attack/g16.png',
+        'img/4_enemie_boss_chicken/3_attack/g17.png',
+        'img/4_enemie_boss_chicken/3_attack/g18.png',
+        'img/4_enemie_boss_chicken/3_attack/g19.png',
+        'img/4_enemie_boss_chicken/3_attack/g20.png'
     ];
     IMAGES_HURT = [
-        'img/4_enemie_boss_chicken/4_hurt/G21.png',
-        'img/4_enemie_boss_chicken/4_hurt/G22.png',
-        'img/4_enemie_boss_chicken/4_hurt/G23.png'
+        'img/4_enemie_boss_chicken/4_hurt/g21.png',
+        'img/4_enemie_boss_chicken/4_hurt/g22.png',
+        'img/4_enemie_boss_chicken/4_hurt/g23.png'
     ];
     IMAGES_DEAD = [
-        'img/4_enemie_boss_chicken/5_dead/G24.png',
-        'img/4_enemie_boss_chicken/5_dead/G25.png',
-        'img/4_enemie_boss_chicken/5_dead/G26.png'
+        'img/4_enemie_boss_chicken/5_dead/g24.png',
+        'img/4_enemie_boss_chicken/5_dead/g25.png',
+        'img/4_enemie_boss_chicken/5_dead/g26.png'
     ];
 
     constructor(world) {
-        
-        super().loadImage('img/4_enemie_boss_chicken/2_alert/G11.png');
+
+        super().loadImage('img/4_enemie_boss_chicken/2_alert/g11.png');
         this.world = world;
         this.x = 6400;
         this.loadImages(this.IMAGES_WALKING);
@@ -130,6 +131,15 @@ class ChickenEndboss extends MoveableObject {
         if (!this.isJumping && !this.isAttacking) {
             this.chase(dist);
         }
+        // if (this.energy < 60) {
+        //     const mini = new MiniChicken();
+        //     mini.x = this.x + this.width / 2 - mini.width / 2; // mittig am Endboss
+        //     mini.y = this.y + this.height / 2 - mini.height / 2; // mittig am Endboss
+        //     mini.world = this.world; // Referenz setzen
+        //     this.world.enemies.push(mini);
+        //     this.world.enemies.push(mini);
+        //     this.world.enemies.push(mini);
+        // }
     }
 
     tickAnimation() {
@@ -189,6 +199,11 @@ class ChickenEndboss extends MoveableObject {
         this.isAttacking = true;
         this.currentImage = 0;
         this.nextAttackAt = now + this.ATTACK_COOLDOWN;
+
+        // Speed für Angriff erhöhen
+        const oldSpeed = this.baseSpeed;
+        this.baseSpeed = 18; // z.B. doppelt so schnell
+
         setTimeout(() => {
             if (!this.isDead &&
                 Math.abs(this.x - world.character.x) <= this.ATTACK_DISTANCE + 20) {
@@ -196,8 +211,10 @@ class ChickenEndboss extends MoveableObject {
                 world.statusBar.setPercentage(world.character.energy);
             }
         }, 300);
+
         setTimeout(() => {
             this.isAttacking = false;
+            this.baseSpeed = oldSpeed; // Speed zurücksetzen
         }, 750);
     }
 
@@ -240,8 +257,8 @@ class ChickenEndboss extends MoveableObject {
     updateFacing(dist) {
         this.otherDirection = dist < 0;
         if (this.world) {
-        this.world.cameraMode = 'boss';
-    }
+            this.world.cameraMode = 'boss';
+        }
     }
 
     takeBottleHit() {
@@ -274,6 +291,19 @@ class ChickenEndboss extends MoveableObject {
                     this.markedForRemoval = true;
                 }, 2000);
             }
-        }, 180); // Animationsgeschwindigkeit nach Geschmack
+        }, 180);
+        setTimeout(() => {
+    if (world && world.enemies) {
+        world.enemies.forEach(enemy => {
+            if (enemy.energy > 0) {
+                enemy.energy = 0;
+                enemy.markedForRemoval = true;
+                enemy.animateDeath && enemy.animateDeath();
+            }
+        });
+    }
+    document.getElementById('winningscreen').classList.remove('hidden');
+    if (world) world.paused = true;
+}, 2000);
     }
 }

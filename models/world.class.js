@@ -24,7 +24,7 @@ class World {
     CAM_RIGHT_OFFSET_EXTRA = 100; // der -100 Teil aus deiner rechten Formel
 
 
-    bossShiftMinHoldUntil = 0; // Mindest-Haltedauer (ms) der Boss-Perspektive
+    bossShiftMinHoldUntil = 2000; // Mindest-Haltedauer (ms) der Boss-Perspektive
     cameraSmoothFactor = 0.12;   // 0.05 langsamer, 0.2 schneller
     cameraSnapThreshold = 1.0;
 
@@ -42,13 +42,15 @@ class World {
     collectedCoins = 0;
     cameraMode = 'char';
 
+    characterKnockbackActive = false;
+
     constructor(canvas, keyboard) {
         this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
         this.keyboard = keyboard;
 
         this.level = level1;
-        
+
         this.enemies = level1.enemies;
         this.clouds = level1.clouds;
         this.backgroundObjects = level1.backgroundObjects;
@@ -68,11 +70,18 @@ class World {
     }
 
     run() {
-        setInterval(() => {
+        this.locicInterval = setInterval(() => {
             this.checkCollisions();
         }, 200);
     }
-
+    destroy() {
+        if (this.logicInterval) clearInterval(this.logicInterval);
+        if (this.character && this.character.animations) clearInterval(this.character.animations);
+        this.enemies.forEach(e => {
+            if (e.animations) clearInterval(e.animations);
+        });
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
 
     updateCamera() {
         this.evaluateBossCamera();
@@ -111,7 +120,7 @@ class World {
         // Ganzzahlen gegen Flimmern
         this.camera_x = Math.round(this.camera_x);
     }
-    // ...existing code...
+
 
 
     evaluateBossCamera() {
@@ -152,8 +161,55 @@ class World {
             this.checkEnemyCollision();
             this.checkCollectableCollision();
             this.checkEnemyBottleCollision();
+            this.checkMiniChickenStomp();
         }
 
+    }
+
+    checkMiniChickenStomp() {
+        this.enemies.forEach((enemy) => {
+            if (
+                (enemy instanceof MiniChicken) &&
+                !this.character.isDead() &&
+                this.character.isColliding(enemy) &&
+                enemy.energy > 0
+                
+            ) {
+                this.characterKnockbackActive = true;
+                if (enemy.x < this.character.x) {
+                    let interval = setInterval(() => {
+                        this.character.jump(10);
+                        this.character.moveRight();
+                        enemy.energy = 0;
+                        setTimeout(() => {
+                            enemy.markedForRemoval = true;
+                            // bottle.markedForRemoval = true;
+                        }, 500);
+                    }, 16);
+                    setTimeout(() => {
+                        clearInterval(interval);
+                        this.characterKnockbackActive = false;
+                    }, 1500);
+                } else {
+                    this.characterKnockbackActive = true;
+                    let interval = setInterval(() => {
+                        this.character.jump(10);
+                        this.character.moveLeft();
+                        enemy.energy = 0;
+                        setTimeout(() => {
+                            enemy.markedForRemoval = true;
+                            // bottle.markedForRemoval = true;
+                        }, 500);
+                    }, 16);
+                    setTimeout(() => {
+                        clearInterval(interval);
+                        this.characterKnockbackActive = false;
+                    }, 1500);
+                }
+                this.character.hit(); // Optional: Schaden zufügen
+                this.statusBar.setPercentage(this.character.energy);
+            }
+        });
     }
 
     checkEnemyCollision() {
@@ -173,7 +229,7 @@ class World {
                 this.character.isColliding(enemy)
             ) {
                 enemy.energy = 0;
-                this.character.jump();
+                this.character.jump(20);
                 enemy.animateDeath();
                 setTimeout(() => {
                     enemy.markedForRemoval = true;
@@ -188,7 +244,7 @@ class World {
             if (bottle.markedForRemoval) return;
             this.enemies.forEach(enemy => {
                 if (enemy.energy > 0 && bottle.isColliding(enemy)) {
-                    if (enemy instanceof Chicken) {
+                    if (enemy instanceof Chicken || enemy instanceof MiniChicken) {
                         enemy.energy = 0;
                         enemy.animateDeath && enemy.animateDeath();
                         setTimeout(() => {
