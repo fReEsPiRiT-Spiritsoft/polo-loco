@@ -168,3 +168,15 @@ window.addEventListener('keyup', (event) => {
 document.getElementById('difficulty').addEventListener('change', function (e) {
     selectedDifficulty = e.target.value;
 });
+
+function openControlsModal() {
+    document.getElementById('controlsModal').classList.remove('hidden');
+}
+function closeControlsModal() {
+    document.getElementById('controlsModal').classList.add('hidden');
+}
+
+// Optional: ESC schließt das Modal
+window.addEventListener('keydown', function(e) {
+    if (e.key === "Escape") closeControlsModal();
+});

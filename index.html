@@ -40,12 +40,15 @@
                     <option value="hard">Hard</option>
                 </select>
             </div>
+            <button class="btn" id="btnControls" type="button" onclick="openControlsModal()">Info</button>
             <img src="./img/9_intro_outro_screens/start/startscreen_1.png" class="start-image">
             <button class="btn" id="btnPlay" onclick="startGame()">PLAY</button>
+
         </div>
 
         <div id="endscreen" class="hidden">
             <img src="img/win_lose/looser.png" class="end-image">
+            <button class="btn" onclick="goToMainMenu()">Main Menu</button>
             <button class="btn" onclick="restartGame()">Restart</button>
         </div>
         <div id="winningscreen" class="hidden">
@@ -58,7 +61,34 @@
 
         <canvas id="canvas" width="720" height="480"></canvas>
 
+        <div id="controlsModal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-btn" onclick="closeControlsModal()">&times;</span>
+                <h2>Tastenbelegung</h2>
+                <ul>
+                    <li><b>Pfeil rechts:</b> Nach rechts laufen</li>
+                    <li><b>Pfeil links:</b> Nach links laufen</li>
+                    <li><b>Leertaste:</b> Springen</li>
+                    <li><b>D:</b> Flasche werfen</li>
+                </ul>
+                <h2>Spielprinzip
+
+                    Du bist Pepe, ein kleiner, runder Mexikaner mit mehr Mut als Kondition.
+                    Deine Aufgabe: Renne durch die Spielwelt, weiche Hühnern aus und überlebe das gefiederte Chaos.
+
+                    Aber Achtung:
+
+                    Hühner sind schneller, als sie aussehen – lass dich nicht erwischen!
+
+                    Küken sind nicht süß, sondern kleine Bio-Bomben geh ihnen lieber aus dem Weg.
+
+                    Am Ende wartet Mama Henne, die Oberbossin im Federkleid. Nur wenn du sie besiegst, bist du der Held
+                    – und kannst den ultimativen Titel tragen:
+                    „Geflügelbezwinger des Jahres“!</h2>
+            </div>
+        </div>
         <div class="ui" id="ui">
+            <button class="btn" onclick="goToMainMenu()">Main Menu</button>
             <button class="btn" id="btnRestart" onclick="restartGame()">Restart</button>
             <button class="btn" id="btnRestart" onclick="toggleFullscreen()">fullscreen</button>
             <button class="btn" id="btnRestart" onclick="restartGame()">Mute</button>

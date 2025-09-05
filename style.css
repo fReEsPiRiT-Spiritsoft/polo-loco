@@ -205,3 +205,71 @@ body {
     background: #ffd700;
     color: #a86c3a;
 }
+
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s;
+}
+.modal.hidden {
+    display: none;
+}
+.modal-content {
+    background: linear-gradient(135deg, #a86c3a 0%, #e2b07e 100%);
+    border: 5px solid #6b3a1a;
+    border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    padding: 36px 48px;
+    color: #fff8e1;
+    font-family: 'Rye', 'Rock Salt', 'Arial Black', cursive;
+    text-align: left;
+    min-width: 320px;
+    max-width: 90vw;
+    position: relative;
+    
+}
+.modal-content h2 {
+    margin-top: 0;
+    color: #ffd700;
+    text-shadow: 2px 2px #6b3a1a;
+    font-size: 28px;
+    letter-spacing: 2px;
+}
+.modal-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 24px 0 0 0;
+}
+.modal-content li {
+    font-size: 1.3em;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+}
+.close-btn {
+    position: absolute;
+    top: 12px;
+    right: 18px;
+    font-size: 2em;
+    color: #fff8e1;
+    cursor: pointer;
+    text-shadow: 2px 2px #6b3a1a;
+    transition: color 0.2s;
+}
+.close-btn:hover {
+    color: #ffd700;
+}
+
+#startscreen #btnControls {
+    position: absolute;
+    top: 15px;
+    z-index: 20;
+    font-size: 20px;
+    margin: 0px;
+    width: 82px;
+    height: 70px;
+}

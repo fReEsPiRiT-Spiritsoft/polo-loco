@@ -297,36 +297,34 @@ class World {
     }
 
     draw() {
-        this.updateCamera()
+        this.updateCamera();
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // 1. Hintergründe (eigene Parallax-Berechnung, kein globales translate)
+        this.backgroundObjects.forEach(bg => {
+            if (bg instanceof BackgroundObject) {
+                bg.draw(this.ctx, this.camera_x);
+            }
+        });
+
+        // 2. Welt verschieben für restliche Objekte
+        this.ctx.save();
         this.ctx.translate(this.camera_x, 0);
 
-        this.addObjectsToMap(this.backgroundObjects);
-        this.addObjectsToMap(this.clouds);
+        this.addObjectsToMap(this.clouds);                // Falls Clouds kein Parallax haben
         this.addObjectsToMap(this.level.collectableObjects);
         this.addToMap(this.character);
+        this.addObjectsToMap(this.enemies);
+        this.addObjectsToMap(this.throwableObjects);
 
+        this.ctx.restore(); // zurück für HUD
 
-        /////////////////////////////////////
-        this.ctx.translate(-this.camera_x, 0);
-        // Screen Fixed Objects Here
+        // 3. HUD (fix)
         this.addToMap(this.statusBar);
         this.addToMap(this.coinStatusBar);
         this.addToMap(this.bottleStatusBar);
-        this.ctx.translate(this.camera_x, 0);
-        ///////////////////////////////////////
 
-        this.addObjectsToMap(this.enemies);
-        this.addObjectsToMap(this.throwableObjects)
-
-        this.ctx.translate(-this.camera_x, 0);
-
-
-        let self = this
-        requestAnimationFrame(function () {
-            self.draw();
-        });
-
+        requestAnimationFrame(() => this.draw());
     }
 
     addObjectsToMap(objects) {
@@ -336,15 +334,12 @@ class World {
     }
 
     addToMap(mo) {
+        // BackgroundObjects sind schon gezeichnet -> überspringen
+        if (mo instanceof BackgroundObject) return;
 
-        if (mo.otherDirection) {
-            this.flipImage(mo);
-        }
+        if (mo.otherDirection) this.flipImage(mo);
         mo.draw(this.ctx);
-        // mo.drawFrame(this.ctx)
-        if (mo.otherDirection) {
-            this.flipImageBack(mo);
-        }
+        if (mo.otherDirection) this.flipImageBack(mo);
     }
 
     flipImage(mo) {
