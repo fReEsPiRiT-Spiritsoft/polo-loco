@@ -6,36 +6,48 @@ let selectedDifficulty = 'medium';
 
 function init() {
     canvas = document.getElementById('canvas');
-    // World hier NOCH NICHT erstellen
+}
+
+function getDifficultySettings() {
+    switch (selectedDifficulty) {
+        case 'easy':
+            return { endbossEnergy: 60, characterEnergy: 120, cloudSpeed: 0.2, darkClouds: false, rain: false };
+        case 'medium':
+            return { endbossEnergy: 100, characterEnergy: 100, cloudSpeed: 0.4, darkClouds: false, rain: false };
+        case 'hard':
+            return { endbossEnergy: 140, characterEnergy: 50, cloudSpeed: 1.5, darkClouds: true, rain: true };
+        default:
+            return { endbossEnergy: 100, characterEnergy: 100, cloudSpeed: 0.4, darkClouds: false, rain: false };
+    }
 }
 
 function startGame() {
-    initLevel1(); // <-- Level initialisieren!
+    const settings = getDifficultySettings();
+    initLevel1(settings.darkClouds);
     world = new World(canvas, keyboard, level1);
     world.start();
-
-    // Endboss-Energie nach Schwierigkeitsgrad setzen
     const endboss = world.enemies.find(e => e instanceof ChickenEndboss);
     if (endboss) {
-        if (selectedDifficulty === 'easy') {
-            endboss.energy = 60;
-            if (world && world.character) {
-                world.character.energy = 120;
-            }
-        }
-        
-        else if (selectedDifficulty === 'medium') endboss.energy = 80;
-        else if (selectedDifficulty === 'hard') {
-            endboss.energy = 120;
-            if (world && world.character) {
-                world.character.energy = 50;
-            }
-        }
+        endboss.energy = settings.endbossEnergy;
+        world.character.energy = settings.characterEnergy;
+        world.clouds.forEach(c => c.speed = settings.cloudSpeed);
+        if (settings.darkClouds) darkenClouds(world);
+        if (settings.rain) world.enableRain = true;
     }
-
-    // Startscreen ausblenden
     const s = document.getElementById('startscreen');
     if (s) s.style.display = 'none';
+}
+
+function darkenClouds(world) {
+    const darkImgs = [
+        'img/5_background/layers/4_clouds/1_dark.png',
+        'img/5_background/layers/4_clouds/2_dark.png'
+    ];
+    if (!world.clouds) return;
+    world.clouds.forEach(c => {
+        c.loadImage(darkImgs[Math.floor(Math.random() * darkImgs.length)]);
+        c.isDark = true;
+    });
 }
 
 function restartGame() {
@@ -74,7 +86,6 @@ function resizeCanvasToFullscreen() {
         gameDiv.style.position = 'relative';
         canvas.width = 720;
         canvas.height = 480;
-
         const aspect = 720 / 480;
         const vw = window.innerWidth;
         const vh = window.innerHeight;
@@ -97,10 +108,8 @@ function resizeCanvasToFullscreen() {
     } else {
         gameDiv.style.width = '720px';
         gameDiv.style.height = '480px';
-
         canvas.width = 720;
         canvas.height = 480;
-
         canvas.style.position = 'static';
         canvas.style.width = '100%';
         canvas.style.height = '100%';
@@ -111,7 +120,7 @@ function resizeCanvasToFullscreen() {
     }
 }
 
-// Bei Fullscreen-Wechsel Canvas anpassen:
+
 document.addEventListener('fullscreenchange', resizeCanvasToFullscreen);
 
 window.addEventListener('keydown', (event) => {
@@ -165,6 +174,34 @@ window.addEventListener('keyup', (event) => {
 
 });
 
+function updateRotateNotice() {
+    const el = document.getElementById('rotateNotice');
+    if (!el) return;
+    const isPortrait = window.matchMedia("(orientation: portrait)").matches;
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    el.style.display = (isMobile && isPortrait) ? 'flex' : '';
+}
+
+function toggleMenu() {
+    const ui = document.getElementById('ui');
+    if (!ui) return;
+    ui.classList.toggle('open');
+}
+
+document.addEventListener('click', (e) => {
+    const ui = document.getElementById('ui');
+    const toggle = document.getElementById('menuToggle');
+    if (!ui || !toggle) return;
+    if (window.innerWidth > 900) return; 
+    if (!ui.contains(e.target) && e.target !== toggle) {
+        ui.classList.remove('open');
+    }
+});
+
+window.addEventListener('orientationchange', updateRotateNotice);
+window.addEventListener('resize', updateRotateNotice);
+document.addEventListener('DOMContentLoaded', updateRotateNotice);
+
 document.getElementById('difficulty').addEventListener('change', function (e) {
     selectedDifficulty = e.target.value;
 });
@@ -176,7 +213,17 @@ function closeControlsModal() {
     document.getElementById('controlsModal').classList.add('hidden');
 }
 
-// Optional: ESC schließt das Modal
-window.addEventListener('keydown', function(e) {
+window.addEventListener('keydown', function (e) {
     if (e.key === "Escape") closeControlsModal();
 });
+
+window.addEventListener('keydown', function(e) {
+    if (e.key === "Escape") closeImpressumModal();
+});
+
+function openImpressumModal() {
+    document.getElementById('impressumModal').classList.remove('hidden');
+}
+function closeImpressumModal() {
+    document.getElementById('impressumModal').classList.add('hidden');
+}

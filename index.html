@@ -18,6 +18,7 @@
     <script src="models/miniChicken.class.js"></script>
     <script src="models/chickenEndboss.class.js"></script>
     <script src="models/cloud.class.js"></script>
+    <script src="models/raindrops.class.js"></script>
     <script src="models/keyboard.class.js"></script>
     <script src="models/world.class.js"></script>
     <script src="models/throwable-object.class.js"></script>
@@ -58,11 +59,16 @@
                 <button class="btn" onclick="restartGame()">Try Again</button>
             </div>
         </div>
-
+        <!-- ...existing code... -->
+        <div id="rotateNotice">
+            <img src="img/1_controls/rotate.png" alt="Rotate your phone">
+        </div>
+        <!-- ...existing code... -->
         <canvas id="canvas" width="720" height="480"></canvas>
 
         <div id="controlsModal" class="modal hidden">
             <div class="modal-content">
+                <button class="btn impressum" onclick="openImpressumModal()">Impressum</button>
                 <span class="close-btn" onclick="closeControlsModal()">&times;</span>
                 <h2>Tastenbelegung</h2>
                 <ul>
@@ -85,8 +91,25 @@
                     Am Ende wartet Mama Henne, die Oberbossin im Federkleid. Nur wenn du sie besiegst, bist du der Held
                     – und kannst den ultimativen Titel tragen:
                     „Geflügelbezwinger des Jahres“!</h2>
+
             </div>
         </div>
+        <div id="impressumModal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-btn" onclick="closeImpressumModal()">&times;</span>
+                <h2>Impressum</h2>
+                <p>
+                    Entwickler: Patrick Schmidt<br>
+                    E-Mail: kontakt@patrick-schmidt.de<br>
+                    <br>
+                    Dies ist ein Lernprojekt der Developer Akademie.<br>
+                    Alle Grafiken und Sounds sind nur zu Demonstrationszwecken verwendet.
+                </p>
+            </div>
+        </div>
+
+        <button id="menuToggle" class="btn menu-toggle" type="button" onclick="toggleMenu()">Menu</button>
+
         <div class="ui" id="ui">
             <button class="btn" onclick="goToMainMenu()">Main Menu</button>
             <button class="btn" id="btnRestart" onclick="restartGame()">Restart</button>

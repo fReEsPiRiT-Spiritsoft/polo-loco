@@ -97,77 +97,69 @@ class Character extends MoveableObject {
     }
 
     animate() {
-        this.moveInterval = setInterval(() => {
+        this.startMovementLoop();
+        this.startAnimationLoop();
+    }
 
-            let moved = false;
+    startMovementLoop() {
+        this.moveInterval = setInterval(() => this.updateMovement(), 1000 / 60);
+    }
 
-            // Endboss-Status ermitteln (true = lebt noch)
-            const endbossAlive = this.world?.enemies?.some(e => e instanceof ChickenEndboss && !e.isDead) ?? true;
+    updateMovement() {
+        if (!this.isEndbossAlive()) {
+            if (this.animations) clearInterval(this.animations);
+            return;
+        }
+        let moved = false;
+        if (this.canMoveRight()) { this.moveRight(); this.otherDirection = false; moved = true; }
+        if (this.canMoveLeft()) { this.moveLeft(); this.otherDirection = true; moved = true; }
+        if (this.canJump()) { this.jump(20); moved = true; }
+        if (moved) this.markAction();
+        this.world.camera_x = -this.x + 100;
+    }
 
-            // Wenn Endboss tot -> keine Bewegung mehr
-            if (!endbossAlive) {
-                    clearInterval(this.animations);
-                return; // blockiert Eingaben, Figur bleibt stehen
-            }
+    isEndbossAlive() {
+        return this.world?.enemies?.some(e => e instanceof ChickenEndboss && !e.isDead) ?? true;
+    }
 
-            if (this.world.keyboard.RIGHT &&
-                this.x < 7200 &&
-                !this.isDead() &&
-                !this.characterKnockbackActive) {
-                this.moveRight();
-                this.otherDirection = false;
-                moved = true;
-            }
+    canMoveRight() {
+        return this.world.keyboard.RIGHT && this.x < 7200 && !this.isDead() && !this.characterKnockbackActive;
+    }
 
-            if (this.world.keyboard.LEFT &&
-                this.x > 0 &&
-                !this.isDead() &&
-                !this.characterKnockbackActive) {
-                this.moveLeft();
-                this.otherDirection = true;
-                moved = true;
-            }
+    canMoveLeft() {
+        return this.world.keyboard.LEFT && this.x > 0 && !this.isDead() && !this.characterKnockbackActive;
+    }
 
-            if (this.world.keyboard.SPACE &&
-                !this.isAboveGround() &&
-                !this.isDead()) {
-                this.jump(20);
-                moved = true;
-            }
+    canJump() {
+        return this.world.keyboard.SPACE && !this.isAboveGround() && !this.isDead();
+    }
 
-            if (moved) this.markAction();
+    startAnimationLoop() {
+        this.animations = setInterval(() => this.updateAnimationFrame(), 100);
+    }
 
-            this.world.camera_x = -this.x + 100;
+    updateAnimationFrame() {
+        if (this.isHurt()) return this.playAnimation(this.IMAGES_HURT);
+        if (this.isDead()) return this.playDeathSequence();
+        if (this.isAboveGround()) return this.playAnimation(this.IMAGES_JUMPING);
+        if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) return this.playAnimation(this.IMAGES_WALKING);
+        if (this.isLongIdle()) return this.playAnimation(this.IMAGES_LONG_IDLE);
+        this.playAnimation(this.IMAGES_IDLE);
+    }
 
-        }, 1000 / 60);
-
-
-        this.animations = setInterval(() => {
-            if (this.isHurt()) {
-                this.playAnimation(this.IMAGES_HURT);
-            }
-            else if (this.isDead()) {
-                this.playAnimation(this.IMAGES_DEAD);
-                setTimeout(() => {
-                    clearInterval(this.animations);
-                    this.showSarg();
-                }, 500);
-            } else if
-                (this.isAboveGround()) {
-                this.playAnimation(this.IMAGES_JUMPING);
-            } else {
-                if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) {
-                    this.playAnimation(this.IMAGES_WALKING);
-                } else if (this.isLongIdle()) {
-                    this.playAnimation(this.IMAGES_LONG_IDLE);
-                } else {
-                    this.playAnimation(this.IMAGES_IDLE);
-                }
-            }
-
-        }, 100);
-
-
+    playDeathSequence() {
+        this.playAnimation(this.IMAGES_DEAD);
+        setTimeout(() => {
+            clearInterval(this.animations);
+            this.showSarg();
+        }, 500);
+    }
+    showEndscreen() {
+        setTimeout(() => {
+            const es = document.getElementById('endscreen');
+            if (es) es.classList.remove('hidden');
+            if (this.world) this.world.paused = true;
+        }, 800);
     }
     showSarg() {
         if (this.sargShown) return;
@@ -178,11 +170,10 @@ class Character extends MoveableObject {
         this.y = 320;
         this.height = 200;
         this.width = 300;
-        setTimeout(() => {
-            const es = document.getElementById('endscreen');
-            if (es) es.classList.remove('hidden');
-            if (this.world) this.world.paused = true;
-        }, 800);
+        this.showEndscreen();
+        this.y = 320;
     }
+
+    
 
 }

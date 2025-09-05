@@ -18,7 +18,7 @@ class MoveableObject extends DrawableObject {
 
     isAboveGround() {
         if (this instanceof ThrowableObject) {
-            if (this.y >= 390) {
+            if (this.y >= 385) {
                 this.groundContact = true;
             } else {
                 this.groundContact = false;

@@ -273,3 +273,152 @@ body {
     width: 82px;
     height: 70px;
 }
+
+
+/* Basis: Responsive Spielfläche (Behält 720x480 Verhältnis) */
+.game {
+    position: relative;
+    width: 100%;
+    max-width: 1000px;              /* optional Obergrenze Desktop */
+    aspect-ratio: 3 / 2;             /* 720 / 480 */
+    margin: 0 auto;
+    background: #000;
+    overflow: hidden;
+}
+
+/* Fallback für Browser ohne aspect-ratio */
+.game::before {
+    content: "";
+    float: left;
+    padding-top: calc(100% * 2 / 3); /* Höhe = Breite * (480/720) */
+}
+.game::after {
+    content: "";
+    display: block;
+    clear: both;
+}
+
+canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+}
+
+/* Start-/UI-Elemente skalieren mit */
+#startscreen,
+#endscreen,
+#winningscreen,
+#controlsModal,
+#impressumModal,
+.ui {
+    font-size: clamp(12px, 1.6vw, 18px);
+}
+
+/* Overlay für „Bitte drehen“ */
+#rotateNotice {
+    position: fixed;
+    z-index: 5000;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    display: none;                  /* per JS / Media Query sichtbar */
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 24px;
+    padding: 24px;
+}
+#rotateNotice img {
+    max-width: 60vmin;
+    width: 320px;
+    height: auto;
+    filter: drop-shadow(0 0 12px #222);
+}
+
+/* Automatisch anzeigen bei Portrait auf schmalen Geräten */
+@media (orientation: portrait) and (max-width: 900px) {
+    #rotateNotice {
+        display: flex;
+    }
+    /* Optional: Spielfläche ausblenden darunter */
+    .game > *:not(#rotateNotice) {
+        filter: blur(2px);
+        pointer-events: none;
+    }
+}
+
+/* Kleinere Geräte Landscape: Canvas Höhe begrenzen */
+@media (orientation: landscape) and (max-height: 480px) {
+    .game {
+        max-height: 100vh;
+        width: auto;
+    }
+    canvas {
+        height: 100%;
+        width: auto;
+        margin: 0 auto;
+    }
+}
+
+/* Vollbild-Modus: Canvas füllt Container */
+:fullscreen .game,
+.game:fullscreen {
+    max-width: none;
+    width: 100vw;
+    aspect-ratio: auto;
+    height: 100vh;
+}
+:fullscreen canvas,
+.game:fullscreen canvas {
+    width: 100%;
+    height: 100%;
+}
+
+#menuToggle {
+    position: absolute;
+    top: 8px;
+    right: 15px;
+    z-index: 40;
+    display: none;                /* Standard: nur mobil sichtbar */
+    padding: 10px 14px;
+    letter-spacing: 1px;
+}
+
+/* Basiszustand UI (Desktop unverändert) */
+#ui {
+    transition: opacity .2s, transform .2s;
+}
+
+/* Mobile Verhalten */
+@media (max-width: 900px) {
+    #menuToggle {
+        display: inline-block;
+    }
+    #ui {
+        position: absolute;
+        top: 60px;
+        right: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background: rgba(0,0,0,0.65);
+        padding: 12px 16px;
+        border: 3px solid #6b3a1a;
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+        backdrop-filter: blur(4px);
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-6px);
+    }
+    #ui.open {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+    }
+    /* Buttons im Mobile-Menü etwas breiter */
+    #ui .btn {
+        width: 160px;
+    }
+}

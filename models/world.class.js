@@ -6,6 +6,9 @@ class World {
     enemies = [];
     clouds = [];
     backgroundObjects = [];
+    raindrops = [];
+    lastRainSpawn = 0;
+
 
     ctx;
     canvas;
@@ -173,7 +176,7 @@ class World {
                 !this.character.isDead() &&
                 this.character.isColliding(enemy) &&
                 enemy.energy > 0
-                
+
             ) {
                 this.characterKnockbackActive = true;
                 if (enemy.x < this.character.x) {
@@ -317,12 +320,29 @@ class World {
         this.addObjectsToMap(this.enemies);
         this.addObjectsToMap(this.throwableObjects);
 
+        const now = performance.now();
+        if (this.enableRain) {
+            this.spawnRain(now);
+        }
+        // updateRain zeichnet die Tropfen (Positionssystem = Weltkoordinaten)
+        this.raindrops = this.raindrops.filter(r => r.update());
+        this.raindrops.forEach(r => r.draw(this.ctx));
+
+
         this.ctx.restore(); // zurück für HUD
 
         // 3. HUD (fix)
         this.addToMap(this.statusBar);
         this.addToMap(this.coinStatusBar);
         this.addToMap(this.bottleStatusBar);
+
+        if (this.enableRain) { // oder ein anderes Flag für "dunkel"
+        this.ctx.save();
+        this.ctx.globalAlpha = 0.25; // 0.0 = durchsichtig, 1.0 = komplett schwarz
+        this.ctx.fillStyle = "#000";
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.restore();
+    }
 
         requestAnimationFrame(() => this.draw());
     }
@@ -351,6 +371,24 @@ class World {
     flipImageBack(mo) {
         this.ctx.restore();
         mo.x = mo.x * -1;
+    }
+    updateRain() {
+        // Alte entfernen
+        this.raindrops = this.raindrops.filter(r => r.update());
+        // Zeichnen (nach Hintergründen, vor Vorder-Objekten)
+        this.raindrops.forEach(r => r.draw(this.ctx));
+    }
+
+    spawnRain(now) {
+        if (now - this.lastRainSpawn < 80) return;
+        this.lastRainSpawn = now;
+        if (!this.clouds || !this.clouds.length) return;
+        // 2–4 Wolken wählen
+        const count = 2 + Math.floor(Math.random() * 8);
+        for (let i = 0; i < count; i++) {
+            const cloud = this.clouds[Math.floor(Math.random() * this.clouds.length)];
+            this.raindrops.push(new Raindrop(cloud.x + 250, cloud.y + 80));
+        }
     }
 }
 
