@@ -66,9 +66,16 @@ function restartGame() {
         if (settings.darkClouds) darkenClouds(world);
         if (settings.rain) world.enableRain = true;
     }
-    const s = document.getElementById('startscreen');
-    if (s) s.style.display = 'none';
+    cleanScreen();
 }
+
+function cleanScreen() {
+    const w = document.getElementById('winningscreen')
+    const s = document.getElementById('endscreen');
+    if (s) s.style.display = 'none';
+    if (w) w.style.display = 'none';
+}
+
 
 function goToMainMenu() {
     location.reload();
@@ -82,9 +89,6 @@ function toggleFullscreen() {
         document.exitFullscreen && document.exitFullscreen();
     }
 }
-
-document.addEventListener('fullscreenchange', resizeCanvasToFullscreen);
-window.addEventListener('resize', resizeCanvasToFullscreen);
 
 function resizeCanvasToFullscreen() {
     const gameDiv = document.querySelector('.game');
@@ -129,8 +133,54 @@ function resizeCanvasToFullscreen() {
     }
 }
 
+function updateRotateNotice() {
+    const el = document.getElementById('rotateNotice');
+    if (!el) return;
+    const isPortrait = window.matchMedia("(orientation: portrait)").matches;
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    el.style.display = (isMobile && isPortrait) ? 'flex' : '';
+}
+
+function toggleMenu() {
+    const ui = document.getElementById('ui');
+    if (!ui) return;
+    ui.classList.toggle('open');
+}
+
+function focusCanvas() {
+    const c = document.getElementById('canvas');
+    if (c) c.focus();
+}
+
+document.addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (btn) {
+        setTimeout(() => {
+            btn.blur();
+            focusCanvas();
+        }, 0);
+    }
+});
+
+window.addEventListener('keydown', e => {
+    if (e.code === 'Space' && document.activeElement?.tagName === 'BUTTON') {
+        e.preventDefault();
+        document.activeElement.blur();
+        focusCanvas();
+    }
+});
+
+// Nach Spielstart Canvas fokussieren
+const _origStartGame = startGame;
+startGame = function () {
+    _origStartGame();
+    focusCanvas();
+};
 
 document.addEventListener('fullscreenchange', resizeCanvasToFullscreen);
+document.addEventListener('fullscreenchange', resizeCanvasToFullscreen);
+window.addEventListener('resize', resizeCanvasToFullscreen);
+
 
 window.addEventListener('keydown', (event) => {
     // console.log(event.keyCode)
@@ -159,8 +209,8 @@ window.addEventListener('keydown', (event) => {
             lastThrowTime = now;
         }
     }
-
 });
+
 window.addEventListener('keyup', (event) => {
     if (event.keyCode == 39) {
         keyboard.RIGHT = false;
@@ -183,25 +233,11 @@ window.addEventListener('keyup', (event) => {
 
 });
 
-function updateRotateNotice() {
-    const el = document.getElementById('rotateNotice');
-    if (!el) return;
-    const isPortrait = window.matchMedia("(orientation: portrait)").matches;
-    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    el.style.display = (isMobile && isPortrait) ? 'flex' : '';
-}
-
-function toggleMenu() {
-    const ui = document.getElementById('ui');
-    if (!ui) return;
-    ui.classList.toggle('open');
-}
-
 document.addEventListener('click', (e) => {
     const ui = document.getElementById('ui');
     const toggle = document.getElementById('menuToggle');
     if (!ui || !toggle) return;
-    if (window.innerWidth > 900) return; 
+    if (window.innerWidth > 900) return;
     if (!ui.contains(e.target) && e.target !== toggle) {
         ui.classList.remove('open');
     }
@@ -226,7 +262,7 @@ window.addEventListener('keydown', function (e) {
     if (e.key === "Escape") closeControlsModal();
 });
 
-window.addEventListener('keydown', function(e) {
+window.addEventListener('keydown', function (e) {
     if (e.key === "Escape") closeImpressumModal();
 });
 

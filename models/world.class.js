@@ -9,7 +9,6 @@ class World {
     raindrops = [];
     lastRainSpawn = 0;
 
-
     ctx;
     canvas;
     keyboard;
@@ -25,7 +24,6 @@ class World {
     CAM_TRANSITION_DURATION = 450; // ms
     CAM_LEFT_OFFSET = 100; // dein Standard links
     CAM_RIGHT_OFFSET_EXTRA = 100; // der -100 Teil aus deiner rechten Formel
-
 
     bossShiftMinHoldUntil = 2000; // Mindest-Haltedauer (ms) der Boss-Perspektive
     cameraSmoothFactor = 0.12;   // 0.05 langsamer, 0.2 schneller
@@ -44,20 +42,16 @@ class World {
     collectedBottles = 0;
     collectedCoins = 0;
     cameraMode = 'char';
-
     characterKnockbackActive = false;
 
     constructor(canvas, keyboard) {
         this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
         this.keyboard = keyboard;
-
         this.level = level1;
-
         this.enemies = level1.enemies;
         this.clouds = level1.clouds;
         this.backgroundObjects = level1.backgroundObjects;
-
         this.draw();
         this.setWorld();
         this.checkCollisions();
@@ -76,14 +70,6 @@ class World {
         this.locicInterval = setInterval(() => {
             this.checkCollisions();
         }, 200);
-    }
-    destroy() {
-        if (this.logicInterval) clearInterval(this.logicInterval);
-        if (this.character && this.character.animations) clearInterval(this.character.animations);
-        this.enemies.forEach(e => {
-            if (e.animations) clearInterval(e.animations);
-        });
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
     updateCamera() {
@@ -127,8 +113,6 @@ class World {
             : (-this.character.x + this.CAM_LEFT_OFFSET);
     }
 
-
-
     evaluateBossCamera() {
         const boss = this.enemies.find(e => e instanceof ChickenEndboss && !e.isDead);
         if (!boss) {
@@ -142,7 +126,6 @@ class World {
         const now = performance.now();
         const dx = this.character.x - boss.x;
         const absDx = Math.abs(dx);
-
         if (this.shouldActivateBossShift(dx, absDx)) {
             this.activateBossShift(now);
             return;
@@ -310,7 +293,6 @@ class World {
     }
 
     checkThrowObjects() {
-
         if (this.keyboard.D && this.collectedBottles > 0) {
             let bottle = new ThrowableObject(
                 this.character.x + 40,
@@ -320,8 +302,6 @@ class World {
             this.collectedBottles--;
             this.bottleStatusBar.setPercentage(this.collectedBottles / 20 * 100)
         }
-
-
     }
 
     drawCamAndBackground() {
@@ -367,14 +347,14 @@ class World {
     }
 
     draw() {
-    this.drawCamAndBackground();
-    this.drawEnvoiment();
-    this.drawRaindrops();
-    this.ctx.restore();              
-    this.drawDarkOverlay();  
-    this.drawStatusBars();    
-    requestAnimationFrame(() => this.draw());
-}
+        this.drawCamAndBackground();
+        this.drawEnvoiment();
+        this.drawRaindrops();
+        this.ctx.restore();
+        this.drawDarkOverlay();
+        this.drawStatusBars();
+        requestAnimationFrame(() => this.draw());
+    }
 
     addObjectsToMap(objects) {
         objects.forEach(o => {
@@ -401,16 +381,11 @@ class World {
         mo.x = mo.x * -1;
     }
 
-    updateRain() {
-        this.raindrops = this.raindrops.filter(r => r.update());
-        this.raindrops.forEach(r => r.draw(this.ctx));
-    }
-
     spawnRain(now) {
         if (now - this.lastRainSpawn < 80) return;
         this.lastRainSpawn = now;
         if (!this.clouds || !this.clouds.length) return;
-        const count = 5 + Math.floor(Math.random() * 8);
+        const count = 8 + Math.floor(Math.random() * 8);
         for (let i = 0; i < count; i++) {
             const cloud = this.clouds[Math.floor(Math.random() * this.clouds.length)];
             this.raindrops.push(new Raindrop(cloud.x + 250, cloud.y + 80));
