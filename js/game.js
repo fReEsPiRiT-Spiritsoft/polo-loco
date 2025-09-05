@@ -54,10 +54,19 @@ function restartGame() {
     if (world && typeof world.destroy === 'function') {
         world.destroy();
     }
-    initLevel1();
+    const settings = getDifficultySettings();
+    initLevel1(settings.darkClouds);
     world = new World(canvas, keyboard, level1);
     world.start();
-    const s = document.getElementById('endscreen');
+    const endboss = world.enemies.find(e => e instanceof ChickenEndboss);
+    if (endboss) {
+        endboss.energy = settings.endbossEnergy;
+        world.character.energy = settings.characterEnergy;
+        world.clouds.forEach(c => c.speed = settings.cloudSpeed);
+        if (settings.darkClouds) darkenClouds(world);
+        if (settings.rain) world.enableRain = true;
+    }
+    const s = document.getElementById('startscreen');
     if (s) s.style.display = 'none';
 }
 

@@ -384,7 +384,7 @@ class World {
         this.lastRainSpawn = now;
         if (!this.clouds || !this.clouds.length) return;
         // 2–4 Wolken wählen
-        const count = 2 + Math.floor(Math.random() * 8);
+        const count = 5 + Math.floor(Math.random() * 8);
         for (let i = 0; i < count; i++) {
             const cloud = this.clouds[Math.floor(Math.random() * this.clouds.length)];
             this.raindrops.push(new Raindrop(cloud.x + 250, cloud.y + 80));
