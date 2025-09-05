@@ -87,45 +87,45 @@ class World {
     }
 
     updateCamera() {
-    this.evaluateBossCamera();
-    if (this.bossShiftActive !== this.lastBossShiftActive) {
-        this.startCameraTransition();
+        this.evaluateBossCamera();
+        if (this.bossShiftActive !== this.lastBossShiftActive) {
+            this.startCameraTransition();
+        }
+        if (this.camTransitionActive) {
+            this.updateCameraTransition();
+        } else {
+            this.setCameraTarget();
+        }
+        this.camera_x = Math.round(this.camera_x);
     }
-    if (this.camTransitionActive) {
-        this.updateCameraTransition();
-    } else {
-        this.setCameraTarget();
+
+    startCameraTransition() {
+        this.lastBossShiftActive = this.bossShiftActive;
+        const target = this.bossShiftActive
+            ? (-this.character.x + this.canvas.width - this.character.width - this.CAM_RIGHT_OFFSET_EXTRA)
+            : (-this.character.x + this.CAM_LEFT_OFFSET);
+        this.camTransitionFrom = this.camera_x;
+        this.camTransitionTo = target;
+        this.camTransitionStart = performance.now();
+        this.camTransitionActive = true;
     }
-    this.camera_x = Math.round(this.camera_x);
-}
 
-startCameraTransition() {
-    this.lastBossShiftActive = this.bossShiftActive;
-    const target = this.bossShiftActive
-        ? (-this.character.x + this.canvas.width - this.character.width - this.CAM_RIGHT_OFFSET_EXTRA)
-        : (-this.character.x + this.CAM_LEFT_OFFSET);
-    this.camTransitionFrom = this.camera_x;
-    this.camTransitionTo = target;
-    this.camTransitionStart = performance.now();
-    this.camTransitionActive = true;
-}
-
-updateCameraTransition() {
-    const now = performance.now();
-    let t = (now - this.camTransitionStart) / this.CAM_TRANSITION_DURATION;
-    if (t >= 1) {
-        t = 1;
-        this.camTransitionActive = false;
+    updateCameraTransition() {
+        const now = performance.now();
+        let t = (now - this.camTransitionStart) / this.CAM_TRANSITION_DURATION;
+        if (t >= 1) {
+            t = 1;
+            this.camTransitionActive = false;
+        }
+        const eased = t * t * (3 - 2 * t);
+        this.camera_x = this.camTransitionFrom + (this.camTransitionTo - this.camTransitionFrom) * eased;
     }
-    const eased = t * t * (3 - 2 * t);
-    this.camera_x = this.camTransitionFrom + (this.camTransitionTo - this.camTransitionFrom) * eased;
-}
 
-setCameraTarget() {
-    this.camera_x = this.bossShiftActive
-        ? (-this.character.x + this.canvas.width - this.character.width - this.CAM_RIGHT_OFFSET_EXTRA)
-        : (-this.character.x + this.CAM_LEFT_OFFSET);
-}
+    setCameraTarget() {
+        this.camera_x = this.bossShiftActive
+            ? (-this.character.x + this.canvas.width - this.character.width - this.CAM_RIGHT_OFFSET_EXTRA)
+            : (-this.character.x + this.CAM_LEFT_OFFSET);
+    }
 
 
 
@@ -346,16 +346,18 @@ setCameraTarget() {
 
     drawRaindrops() {
         const now = performance.now();
-        if (this.enableRain) { this.spawnRain(now); }
+        if (this.enableRain) this.spawnRain(now);
         this.raindrops = this.raindrops.filter(r => r.update());
         this.raindrops.forEach(r => r.draw(this.ctx));
-        if (this.enableRain) {
-            this.ctx.save();
-            this.ctx.globalAlpha = 0.25;
-            this.ctx.fillStyle = "#000";
-            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.restore();
-        }
+    }
+
+    drawDarkOverlay() {
+        if (!this.enableRain) return;
+        this.ctx.save();
+        this.ctx.globalAlpha = 0.25;
+        this.ctx.fillStyle = '#000';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.restore();
     }
 
     drawStatusBars() {
@@ -365,13 +367,14 @@ setCameraTarget() {
     }
 
     draw() {
-        this.drawCamAndBackground();
-        this.drawEnvoiment();
-        this.drawRaindrops();
-        this.ctx.restore();
-        this.drawStatusBars();
-        requestAnimationFrame(() => this.draw());
-    }
+    this.drawCamAndBackground();
+    this.drawEnvoiment();
+    this.drawRaindrops();
+    this.ctx.restore();              
+    this.drawDarkOverlay();  
+    this.drawStatusBars();    
+    requestAnimationFrame(() => this.draw());
+}
 
     addObjectsToMap(objects) {
         objects.forEach(o => {
