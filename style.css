@@ -172,6 +172,8 @@ body {
     display: none;
 }
 
+
+
 .difficulty-select {
     position: absolute;
     top: 90px;
@@ -513,5 +515,19 @@ canvas {
 
     #ui .btn {
         width: 160px;
+    }
+
+    .endscreen{
+        bottom: 50px;
+    }
+}
+
+@media (max-width: 900px) {
+    #endscreen,
+    #winningscreen {
+        bottom: 50px;
+    }
+    #winningscreen .btn {
+        margin-bottom: 70px;
     }
 }
