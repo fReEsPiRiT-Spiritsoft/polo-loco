@@ -252,8 +252,9 @@ class World {
         this.throwableObjects.forEach(bottle => {
             if (bottle.markedForRemoval) return;
             this.enemies.forEach(enemy => {
-                if (enemy.energy > 0 && bottle.isColliding(enemy)) {
+                if (enemy.energy > 0 && bottle.isColliding(enemy) && !bottle.markedForRemoval) {
                     this.handleBottleHit(enemy, bottle);
+                    bottle.markedForRemoval = true; // Flasche nach erstem Treffer markieren!
                 }
             });
         });
@@ -262,6 +263,7 @@ class World {
     }
 
     handleBottleHit(enemy, bottle) {
+        // bottle.startSplash(); // Splash immer sofort!
         if (enemy instanceof Chicken || enemy instanceof MiniChicken) {
             enemy.energy = 0;
             enemy.animateDeath && enemy.animateDeath();
@@ -271,7 +273,10 @@ class World {
             }, 500);
         } else if (enemy instanceof ChickenEndboss) {
             enemy.takeBottleHit();
-            bottle.markedForRemoval = true;
+            bottle.startSplash();
+            setTimeout(() => {
+                bottle.markedForRemoval = true;
+            }, 500); // Splash-Animation abwarten
         }
     }
 
@@ -293,14 +298,18 @@ class World {
     }
 
     checkThrowObjects() {
-        if (this.keyboard.D && this.collectedBottles > 0) {
-            let bottle = new ThrowableObject(
-                this.character.x + 40,
-                this.character.y + 140
-            );
+        if (this.keyboard.D && this.collectedBottles > 0 && !this.throwCooldown) {
+            const facingLeft = this.character.otherDirection;
+            const startX = facingLeft
+                ? this.character.x - 30                  // leicht vor der linken Hand
+                : this.character.x + this.character.width - 30;
+            const startY = this.character.y + this.character.height * 0.45; // ungefähr Handhöhe
+
+            const bottle = new ThrowableObject(startX, startY, facingLeft);
             this.throwableObjects.push(bottle);
             this.collectedBottles--;
-            this.bottleStatusBar.setPercentage(this.collectedBottles / 20 * 100)
+            this.throwCooldown = true;
+            setTimeout(() => this.throwCooldown = false, 300);
         }
     }
 
@@ -346,6 +355,20 @@ class World {
         this.addToMap(this.bottleStatusBar);
     }
 
+    drawEnbossStatusBar() {
+        this.enemies.forEach(enemy => {
+            if (enemy instanceof ChickenEndboss && enemy.statusBar) {
+                const worldX = enemy.x + enemy.width / 2 - enemy.statusBar.width / 2;
+                const worldY = enemy.y - enemy.statusBar.height - 2 + 150; // 20 Pixel weiter unten
+                const screenX = worldX + this.camera_x;
+                const screenY = worldY;
+                enemy.statusBar.x = screenX;
+                enemy.statusBar.y = screenY;
+                enemy.statusBar.draw(this.ctx);
+            }
+        });
+    }
+
     draw() {
         this.drawCamAndBackground();
         this.drawEnvoiment();
@@ -353,6 +376,7 @@ class World {
         this.ctx.restore();
         this.drawDarkOverlay();
         this.drawStatusBars();
+        this.drawEnbossStatusBar()
         requestAnimationFrame(() => this.draw());
     }
 

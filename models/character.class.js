@@ -2,7 +2,7 @@ class Character extends MoveableObject {
 
     height = 300;
     y = 0;
-    speed = 4;
+    speed = 14;
     energy = 100
     lastAction = 0;
     longIdleDelay = 5000;

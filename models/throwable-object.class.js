@@ -19,7 +19,7 @@ class ThrowableObject extends MoveableObject {
 
     ];
 
-    constructor(x, y) {
+    constructor(x, y, facingLeft = false) {
         super().loadImage('img/6_salsa_bottle/salsa_bottle.png')
         this.loadImages(this.IMAGES_ROTATE_BOTTLE);
         this.loadImages(this.BOTTLE_SPLASH);
@@ -27,6 +27,7 @@ class ThrowableObject extends MoveableObject {
         this.y = y;
         this.height = 80;
         this.width = 60;
+        this.direction = facingLeft ? -1 : 1;   // -1 = nach links, 1 = nach rechts
         this.throw();
 
     }
@@ -38,9 +39,9 @@ class ThrowableObject extends MoveableObject {
         this.throwAnimation();
         this.moveInterval = setInterval(() => {
             if (!this.groundContact) {
-                this.x += 10;
+                this.x += 10 * this.direction;   // Richtung beachten
             } else {
-                clearInterval(this.moveInterval); // Bewegung stoppen!
+                clearInterval(this.moveInterval);
             }
         }, 25);
     }
@@ -61,6 +62,13 @@ class ThrowableObject extends MoveableObject {
                 }
             }
         }, 100);
+    }
+
+    startSplash() {
+        this.playAnimation(this.BOTTLE_SPLASH);
+        if (this.currentImage >= this.BOTTLE_SPLASH.length) {
+            clearInterval(this.animationInterval); // Animation beenden
+        }
     }
 
 }

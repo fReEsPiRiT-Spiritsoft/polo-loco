@@ -22,6 +22,8 @@ function getDifficultySettings() {
 }
 
 function startGame() {
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isPortrait = window.matchMedia("(orientation: portrait)").matches;
     const settings = getDifficultySettings();
     initLevel1(settings.darkClouds);
     world = new World(canvas, keyboard, level1);
@@ -36,6 +38,9 @@ function startGame() {
     }
     const s = document.getElementById('startscreen');
     if (s) s.style.display = 'none';
+    if (isMobile && !isPortrait && !document.fullscreenElement) {
+        toggleFullscreen();
+    }
 }
 
 function darkenClouds(world) {
@@ -72,8 +77,8 @@ function restartGame() {
 function cleanScreen() {
     const w = document.getElementById('winningscreen')
     const s = document.getElementById('endscreen');
-    if (s) s.style.display = 'none';
-    if (w) w.style.display = 'none';
+    if (s) s.classList.add('hidden');
+    if (w) w.classList.add('hidden');
 }
 
 
@@ -139,6 +144,7 @@ function updateRotateNotice() {
     const isPortrait = window.matchMedia("(orientation: portrait)").matches;
     const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     el.style.display = (isMobile && isPortrait) ? 'flex' : '';
+
 }
 
 function toggleMenu() {
@@ -176,6 +182,46 @@ startGame = function () {
     _origStartGame();
     focusCanvas();
 };
+
+function setupTouchControls() {
+    const btnLeft = document.getElementById('btnLeft');
+    const btnRight = document.getElementById('btnRight');
+    const btnJump = document.getElementById('btnJump');
+    const btnThrow = document.getElementById('btnThrow');
+    function bindTouch(btn, key) {
+        btn.addEventListener('touchstart', e => {
+            e.preventDefault();
+            keyboard[key] = true;
+            if (key === 'D') {
+                const now = performance.now();
+                if (now - lastThrowTime > 750) {
+                    if (world) {
+                        world.checkThrowObjects();
+                    }
+                    lastThrowTime = now;
+                }
+            }
+        });
+        btn.addEventListener('touchend', e => {
+            e.preventDefault();
+            keyboard[key] = false;
+        });
+        btn.addEventListener('touchcancel', e => {
+            e.preventDefault();
+            keyboard[key] = false;
+        });
+    }
+
+    bindTouch(btnLeft, 'LEFT');
+    bindTouch(btnRight, 'RIGHT');
+    bindTouch(btnJump, 'SPACE');
+    bindTouch(btnThrow, 'D');
+}
+
+    
+
+// Touch-Controls initialisieren, wenn DOM geladen
+document.addEventListener('DOMContentLoaded', setupTouchControls);
 
 document.addEventListener('fullscreenchange', resizeCanvasToFullscreen);
 document.addEventListener('fullscreenchange', resizeCanvasToFullscreen);

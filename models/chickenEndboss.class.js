@@ -83,12 +83,20 @@ class ChickenEndboss extends MoveableObject {
         this.loadImages(this.IMAGES_HURT);
         this.loadImages(this.IMAGES_DEAD);
         this.startLoop();
+        this.maxEnergy = this.energy;
+        this.statusBar = new EndbossStatusBar();
+        this.updateStatusBar();
     }
 
     startLoop() {
         this.aiInterval = setInterval(() => this.update(), 100); // Logik
         this.animInterval = setInterval(() => this.tickAnimation(), 140); // Frame-Wechsel
     }
+
+    updateStatusBar() {
+    let percent = Math.max(0, Math.round((this.energy / this.maxEnergy) * 100));
+    this.statusBar.setPercentage(percent);
+}
 
     update() {
         if (this.isDead) return;
@@ -264,6 +272,7 @@ class ChickenEndboss extends MoveableObject {
     takeBottleHit() {
         if (this.isDead) return;
         this.energy -= 10;
+        this.updateStatusBar();
         this.isHurt = true;
         this.hurtUntil = performance.now() + 400;
         this.currentImage = 0;
@@ -281,29 +290,35 @@ class ChickenEndboss extends MoveableObject {
         clearInterval(this.aiInterval);
         clearInterval(this.animInterval);
 
+        // Todesanimation abspielen
         let i = 0;
         const deadAnim = setInterval(() => {
             this.img = this.imageCache[this.IMAGES_DEAD[i]];
             i++;
             if (i >= this.IMAGES_DEAD.length) {
                 clearInterval(deadAnim);
-                setTimeout(() => {
-                    this.markedForRemoval = true;
-                }, 2000);
             }
         }, 180);
+
+        // Nach 2 Sekunden: Winningscreen anzeigen und Endboss entfernen
         setTimeout(() => {
-    if (world && world.enemies) {
-        world.enemies.forEach(enemy => {
-            if (enemy.energy > 0) {
-                enemy.energy = 0;
-                enemy.markedForRemoval = true;
-                enemy.animateDeath && enemy.animateDeath();
+            // Alle anderen Gegner entfernen (optional)
+            if (world && world.enemies) {
+                world.enemies.forEach(enemy => {
+                    if (enemy !== this && enemy.energy > 0) {
+                        enemy.energy = 0;
+                        enemy.markedForRemoval = true;
+                        enemy.animateDeath && enemy.animateDeath();
+                    }
+                });
             }
-        });
-    }
-    document.getElementById('winningscreen').classList.remove('hidden');
-    if (world) world.paused = true;
-}, 2000);
+            // Winningscreen anzeigen
+            const win = document.getElementById('winningscreen');
+            if (win) win.classList.remove('hidden');
+            if (world) world.paused = true;
+
+            // Endboss erst jetzt entfernen
+            this.markedForRemoval = true;
+        }, 2000);
     }
 }
