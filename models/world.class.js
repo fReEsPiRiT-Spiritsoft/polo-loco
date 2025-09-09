@@ -45,6 +45,7 @@ class World {
     characterKnockbackActive = false;
 
     lastHurtSound = 0;
+    triggeredFightSound = false;
 
     constructor(canvas, keyboard) {
         this.ctx = canvas.getContext('2d');
@@ -58,7 +59,7 @@ class World {
         this.setWorld();
         this.checkCollisions();
         this.run();
-        // this.updateMiniChickenSound();
+        
     }
 
     start() {
@@ -86,6 +87,13 @@ class World {
             this.setCameraTarget();
         }
         this.camera_x = Math.round(this.camera_x);
+    }
+
+    triggerFightSound() {
+        if (this.character.x > 5800 && this.triggeredFightSound === false) {
+            AudioHub.FIGHT_FOR_ENDBOSS.play();
+            this.triggeredFightSound = true;
+        }
     }
 
     startCameraTransition() {
@@ -401,6 +409,7 @@ class World {
         requestAnimationFrame(() => this.draw());
         EnemySounds.updateMiniChickenSound(this);
         EnemySounds.updateChickenSound(this);
+        this.triggerFightSound();
     }
 
     addObjectsToMap(objects) {
