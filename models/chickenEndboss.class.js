@@ -94,9 +94,9 @@ class ChickenEndboss extends MoveableObject {
     }
 
     updateStatusBar() {
-    let percent = Math.max(0, Math.round((this.energy / this.maxEnergy) * 100));
-    this.statusBar.setPercentage(percent);
-}
+        let percent = Math.max(0, Math.round((this.energy / this.maxEnergy) * 100));
+        this.statusBar.setPercentage(percent);
+    }
 
     update() {
         if (this.isDead) return;
@@ -312,6 +312,9 @@ class ChickenEndboss extends MoveableObject {
                     }
                 });
             }
+            AudioHub.WINNER.currentTime = 0;
+            AudioHub.WINNER.volume = 0.2;
+            AudioHub.WINNER.play();
             // Winningscreen anzeigen
             const win = document.getElementById('winningscreen');
             if (win) win.classList.remove('hidden');

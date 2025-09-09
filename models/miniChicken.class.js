@@ -11,9 +11,9 @@ class MiniChicken extends MoveableObject {
         'img/3_enemies_chicken/chicken_small/1_walk/1_w.png',
         'img/3_enemies_chicken/chicken_small/1_walk/2_w.png',
         'img/3_enemies_chicken/chicken_small/1_walk/3_w.png',
-     
+
     ];
- 
+
     IMAGES_DEAD = [
         // 'img/3_enemies_chicken/chicken_small/2_dead/dead.png',
         'img/3_enemies_chicken/chicken_small/2_dead/boom.png',
@@ -35,7 +35,7 @@ class MiniChicken extends MoveableObject {
         'img/3_enemies_chicken/chicken_small/2_dead/boom.png'
     ];
 
-     constructor() {
+    constructor() {
         super().loadImage('img/3_enemies_chicken/chicken_normal/1_walk/1_w.png')
         this.x = 400 + Math.random() * (9200 - 400);
         this.y = 120 + Math.random() * (400 - 120);

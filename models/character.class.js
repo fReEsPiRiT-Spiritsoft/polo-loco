@@ -6,6 +6,7 @@ class Character extends MoveableObject {
     energy = 100
     lastAction = 0;
     longIdleDelay = 5000;
+    wasAboveGround = false;
 
 
     IMAGES_IDLE = [
@@ -108,13 +109,38 @@ class Character extends MoveableObject {
     updateMovement() {
         if (!this.isEndbossAlive()) {
             if (this.animations) clearInterval(this.animations);
+            AudioHub.PEPE_WALK.pause();
             return;
         }
         let moved = false;
         if (this.canMoveRight()) { this.moveRight(); this.otherDirection = false; moved = true; }
         if (this.canMoveLeft()) { this.moveLeft(); this.otherDirection = true; moved = true; }
-        if (this.canJump()) { this.jump(20); moved = true; }
-        if (moved) this.markAction();
+        if (this.canJump()) {
+            this.jump(20);
+            AudioHub.PEPE_JUMP.currentTime = 0;
+            AudioHub.PEPE_JUMP.play();
+            moved = true;
+        }
+        if (moved) {
+            this.markAction();
+            if (AudioHub.PEPE_WALK.paused) {
+                AudioHub.PEPE_WALK.currentTime = 0;
+                AudioHub.PEPE_WALK.loop = true;
+                AudioHub.PEPE_WALK.play();
+            }
+        } else {
+            if (!AudioHub.PEPE_WALK.paused) {
+                AudioHub.PEPE_WALK.pause();
+                AudioHub.PEPE_WALK.currentTime = 0;
+            }
+        }
+        // Landingsound abspielen, wenn gerade gelandet
+        if (this.wasAboveGround && !this.isAboveGround()) {
+            AudioHub.PEPE_LAND.currentTime = 0;
+            AudioHub.PEPE_LAND.play();
+        }
+        this.wasAboveGround = this.isAboveGround();
+
         this.world.camera_x = -this.x + 100;
     }
 
@@ -172,8 +198,12 @@ class Character extends MoveableObject {
         this.width = 300;
         this.showEndscreen();
         this.y = 320;
+        // AudioHub.CHICKEN_STOMP.pause();
+        AudioHub.LOOSER.currentTime = 0;
+        AudioHub.LOOSER.volume = 0.3;
+        AudioHub.LOOSER.play();
     }
 
-    
+
 
 }

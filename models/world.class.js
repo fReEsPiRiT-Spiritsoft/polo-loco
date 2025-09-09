@@ -44,6 +44,8 @@ class World {
     cameraMode = 'char';
     characterKnockbackActive = false;
 
+    lastHurtSound = 0;
+
     constructor(canvas, keyboard) {
         this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
@@ -56,6 +58,7 @@ class World {
         this.setWorld();
         this.checkCollisions();
         this.run();
+        // this.updateMiniChickenSound();
     }
 
     start() {
@@ -155,6 +158,7 @@ class World {
         }
     }
 
+
     checkCollisions() {
         if (this.paused) return;
         this.character.prevY = this.character.prevY ?? this.character.y;
@@ -171,6 +175,9 @@ class World {
         this.enemies.forEach(enemy => {
             if (this.shouldMiniChickenStomp(enemy)) {
                 this.handleMiniChickenStomp(enemy);
+                // AudioHub.MINI_CHICKEN_EXPLODE2.pause();
+                AudioHub.MINI_CHICKEN_EXPLODE2.currentTime = 0;
+                AudioHub.MINI_CHICKEN_EXPLODE2.play();
             }
         });
     }
@@ -224,6 +231,13 @@ class World {
             if (this.character.isColliding(enemy) && enemy.energy > 0) {
                 this.character.hit();
                 this.statusBar.setPercentage(this.character.energy);
+                const now = performance.now();
+                if (now - this.lastHurtSound > 1000) { // 1000 ms = 1 Sekunde
+                    AudioHub.PEPE_HURT.pause();
+                    AudioHub.PEPE_HURT.currentTime = 0;
+                    AudioHub.PEPE_HURT.play();
+                    this.lastHurtSound = now;
+                }
             }
         });
     }
@@ -232,6 +246,9 @@ class World {
         this.enemies.forEach(enemy => {
             if (enemy instanceof Chicken && enemy.energy > 0 && this.character.isColliding(enemy) && this.isStompTopHit(this.character, enemy)) {
                 enemy.energy = 0;
+                // AudioHub.CHICKEN_STOMP.pause();
+                AudioHub.CHICKEN_STOMP.currentTime = 0;
+                AudioHub.CHICKEN_STOMP.play();
                 this.character.jump(20);
                 enemy.animateDeath && enemy.animateDeath();
                 setTimeout(() => enemy.markedForRemoval = true, 800);
@@ -263,10 +280,14 @@ class World {
     }
 
     handleBottleHit(enemy, bottle) {
-        // bottle.startSplash(); // Splash immer sofort!
         if (enemy instanceof Chicken || enemy instanceof MiniChicken) {
             enemy.energy = 0;
             enemy.animateDeath && enemy.animateDeath();
+            if (enemy instanceof MiniChicken) {
+                AudioHub.MINI_CHICKEN_EXPLODE2.pause();
+                AudioHub.MINI_CHICKEN_EXPLODE2.currentTime = 0;
+                AudioHub.MINI_CHICKEN_EXPLODE2.play();
+            }
             setTimeout(() => {
                 enemy.markedForRemoval = true;
                 bottle.markedForRemoval = true;
@@ -276,7 +297,7 @@ class World {
             bottle.startSplash();
             setTimeout(() => {
                 bottle.markedForRemoval = true;
-            }, 500); // Splash-Animation abwarten
+            }, 500);
         }
     }
 
@@ -378,6 +399,8 @@ class World {
         this.drawStatusBars();
         this.drawEnbossStatusBar()
         requestAnimationFrame(() => this.draw());
+        EnemySounds.updateMiniChickenSound(this);
+        EnemySounds.updateChickenSound(this);
     }
 
     addObjectsToMap(objects) {

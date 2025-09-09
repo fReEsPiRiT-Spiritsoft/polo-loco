@@ -41,6 +41,21 @@ function startGame() {
     if (isMobile && !isPortrait && !document.fullscreenElement) {
         toggleFullscreen();
     }
+    if (selectedDifficulty === 'hard') {
+        AudioHub.RAIN_HARD.loop = true;
+        AudioHub.RAIN_HARD.currentTime = 0;
+        AudioHub.RAIN_HARD.volume = 0.2;
+        AudioHub.RAIN_HARD.play();
+        AudioHub.WINDY_HARD.pause();
+        AudioHub.WINDY_HARD.currentTime = 0;
+    } else {
+        AudioHub.WINDY_HARD.loop = true;
+        AudioHub.WINDY_HARD.currentTime = 0;
+        AudioHub.WINDY_HARD.volume = 0.2;
+        AudioHub.WINDY_HARD.play();
+        AudioHub.RAIN_HARD.pause();
+        AudioHub.RAIN_HARD.currentTime = 0;
+    }
 }
 
 function darkenClouds(world) {
@@ -218,7 +233,7 @@ function setupTouchControls() {
     bindTouch(btnThrow, 'D');
 }
 
-    
+
 
 // Touch-Controls initialisieren, wenn DOM geladen
 document.addEventListener('DOMContentLoaded', setupTouchControls);
