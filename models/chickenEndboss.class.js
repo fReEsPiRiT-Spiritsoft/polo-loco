@@ -31,7 +31,7 @@ class ChickenEndboss extends MoveableObject {
     DASH_COOLDOWN = 4000;             // ms
     DASH_DURATION = 620;              // ms aktive Dash-Phase
     DASH_SPEED = 42;                  // horizontale Geschwindigkeit während Dash
-    DASH_TRIGGER_CHANCE = 0.6; 
+    DASH_TRIGGER_CHANCE = 0.6;
 
 
     ALERT_DURATION = 600;
@@ -100,11 +100,17 @@ class ChickenEndboss extends MoveableObject {
         this.maxEnergy = this.energy;
         this.statusBar = new EndbossStatusBar();
         this.updateStatusBar();
+        this.hitbox = {
+            offsetY: 60,
+            offsetX: 60,
+            width: 200,  
+            height: 200 
+        };
     }
 
     startLoop() {
         this.aiInterval = setInterval(() => this.update(), 100);
-        this.animInterval = setInterval(() => this.tickAnimation(), 140); 
+        this.animInterval = setInterval(() => this.tickAnimation(), 140);
     }
 
     updateStatusBar() {

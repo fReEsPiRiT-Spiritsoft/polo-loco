@@ -77,7 +77,7 @@ class Character extends MoveableObject {
     world;
 
     constructor() {
-        super().loadImage('img/2_character_pepe/2_walk/w-21.png')
+        super();
         this.loadImages(this.IMAGES_WALKING);
         this.loadImages(this.IMAGES_JUMPING);
         this.loadImages(this.IMAGES_DEAD);
@@ -87,6 +87,13 @@ class Character extends MoveableObject {
         this.applyGravity();
         this.lastAction = performance.now();
         this.animate();
+        // Hitbox enger als das ganze Sprite
+        this.hitbox = {
+            offsetX: 15,
+            offsetY: 120,
+            width: this.width - 30,
+            height: this.height - 120
+        };
     }
 
     markAction() {

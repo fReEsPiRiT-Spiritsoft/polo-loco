@@ -111,7 +111,7 @@ body {
     position: absolute;
     top: 8px;
     right: 16px;
-    z-index: 5;
+    z-index: 20;
     display: flex;
     gap: 8px;
 }
@@ -229,6 +229,7 @@ body {
     align-items: center;
     justify-content: center;
     transition: opacity 0.2s;
+    
 }
 
 .modal.hidden {
@@ -247,6 +248,9 @@ body {
     min-width: 320px;
     max-width: 90vw;
     position: relative;
+    max-width: 1440px;
+    max-height: 80vh;
+    overflow-y: auto;
 
 }
 

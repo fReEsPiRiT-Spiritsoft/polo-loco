@@ -330,6 +330,9 @@ window.addEventListener('keydown', (event) => {
             lastThrowTime = now;
         }
     }
+    if (event.keyCode == 72) {
+        world.debugHitboxes = !world.debugHitboxes;
+    }
 });
 
 window.addEventListener('keyup', (event) => {

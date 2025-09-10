@@ -45,6 +45,8 @@ class World {
     lastHurtSound = 0;
     triggeredFightSound = false;
 
+    debugHitboxes = false;
+
     constructor(canvas, keyboard) {
         this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
@@ -445,7 +447,7 @@ class World {
         this.enemies.forEach(enemy => {
             if (enemy instanceof ChickenEndboss && enemy.statusBar) {
                 const worldX = enemy.x + enemy.width / 2 - enemy.statusBar.width / 2;
-                const worldY = enemy.y - enemy.statusBar.height - 2 + 150; 
+                const worldY = enemy.y - enemy.statusBar.height - 2 + 150;
                 const screenX = worldX + this.camera_x;
                 const screenY = worldY;
                 enemy.statusBar.x = screenX;
@@ -455,6 +457,16 @@ class World {
         });
     }
 
+    drawHitBoxes() {
+        if (!this.debugHitboxes) return;
+        this.ctx.save();
+        this.ctx.translate(this.camera_x, 0); // gleiche Translation wie für Sprites
+        this.character.drawHitBox(this.ctx, 'rgba(0,255,0,0.25)');
+        this.enemies.forEach(e => e.drawHitBox && e.drawHitBox(this.ctx, 'rgba(255,0,0,0.25)'));
+        this.throwableObjects.forEach(o => o.drawHitBox && o.drawHitBox(this.ctx, 'rgba(0,0,255,0.25)'));
+        this.ctx.restore();
+    }
+
     draw() {
         this.drawCamAndBackground();
         this.drawEnvoiment();
@@ -462,6 +474,7 @@ class World {
         this.ctx.restore();
         this.drawDarkOverlay();
         this.drawStatusBars();
+        this.drawHitBoxes();
         this.drawEnbossStatusBar()
         requestAnimationFrame(() => this.draw());
         EnemySounds.updateMiniChickenSound(this);
