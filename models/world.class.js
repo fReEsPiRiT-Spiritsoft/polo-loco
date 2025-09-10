@@ -14,26 +14,24 @@ class World {
     keyboard;
     camera_x = 0;
 
-    // Für weichen Übergang:
     bossShiftActive = false;
     lastBossShiftActive = false;
     camTransitionActive = false;
     camTransitionStart = 0;
     camTransitionFrom = 0;
     camTransitionTo = 0;
-    CAM_TRANSITION_DURATION = 450; // ms
-    CAM_LEFT_OFFSET = 100; // dein Standard links
-    CAM_RIGHT_OFFSET_EXTRA = 100; // der -100 Teil aus deiner rechten Formel
+    CAM_TRANSITION_DURATION = 450;
+    CAM_LEFT_OFFSET = 100;
+    CAM_RIGHT_OFFSET_EXTRA = 100;
 
-    bossShiftMinHoldUntil = 2000; // Mindest-Haltedauer (ms) der Boss-Perspektive
-    cameraSmoothFactor = 0.12;   // 0.05 langsamer, 0.2 schneller
+    bossShiftMinHoldUntil = 2000;
+    cameraSmoothFactor = 0.12;
     cameraSnapThreshold = 1.0;
 
-    // Konfiguration
-    BOSS_SHIFT_MAX_DISTANCE = 1200;   // weiter weg? -> nicht verschieben
-    BOSS_SHIFT_ACTIVATE_DELTA = 60;   // Boss so viel links vom Character -> aktivieren
-    BOSS_SHIFT_DEACTIVATE_DELTA = 20; // Boss kommt wieder näher / rechts -> deaktivieren
-    BOSS_SHIFT_MIN_HOLD = 500;        // mindestens so lange halten (ms)
+    BOSS_SHIFT_MAX_DISTANCE = 1200;
+    BOSS_SHIFT_ACTIVATE_DELTA = 60;
+    BOSS_SHIFT_DEACTIVATE_DELTA = 20;
+    BOSS_SHIFT_MIN_HOLD = 500;
 
     statusBar = new StatusBar();
     coinStatusBar = new CoinStatusBar();
@@ -90,7 +88,7 @@ class World {
     }
 
     triggerFightSound() {
-        if (this.character.x > 5800 && this.triggeredFightSound === false) {
+        if (this.character.x > 5600 && this.triggeredFightSound === false) {
             AudioHub.FIGHT_FOR_ENDBOSS.play();
             this.triggeredFightSound = true;
         }
@@ -240,8 +238,7 @@ class World {
                 this.character.hit();
                 this.statusBar.setPercentage(this.character.energy);
                 const now = performance.now();
-                if (now - this.lastHurtSound > 1000) { // 1000 ms = 1 Sekunde
-                    // AudioHub.PEPE_HURT.pause();
+                if (now - this.lastHurtSound > 1000) {
                     AudioHub.PEPE_HURT.currentTime = 0;
                     AudioHub.PEPE_HURT.play();
                     this.lastHurtSound = now;
@@ -254,7 +251,6 @@ class World {
         this.enemies.forEach(enemy => {
             if (enemy instanceof Chicken && enemy.energy > 0 && this.character.isColliding(enemy) && this.isStompTopHit(this.character, enemy)) {
                 enemy.energy = 0;
-                // AudioHub.CHICKEN_STOMP.pause();
                 AudioHub.CHICKEN_STOMP.currentTime = 0;
                 AudioHub.CHICKEN_STOMP.volume = 1;
                 AudioHub.CHICKEN_STOMP.play();
@@ -290,74 +286,116 @@ class World {
 
     handleBottleHit(enemy, bottle) {
         if (enemy instanceof Chicken || enemy instanceof MiniChicken) {
-            enemy.energy = 0;
-            // AudioHub.CHICKEN_STOMP.pause();
-            AudioHub.CHICKEN_STOMP.currentTime = 0;
-            AudioHub.CHICKEN_STOMP.volume = 0.1;
-            AudioHub.CHICKEN_STOMP.play();
-            enemy.animateDeath && enemy.animateDeath();
-            if (enemy instanceof MiniChicken) {
-                // AudioHub.MINI_CHICKEN_EXPLODE2.pause();
-                AudioHub.MINI_CHICKEN_EXPLODE2.currentTime = 0;
-                AudioHub.MINI_CHICKEN_EXPLODE2.play();
-            }
-            // Splash-Animation starten
-            bottle.startSplash();
-            // Flasche erst nach Splash-Animation entfernen:
-            setTimeout(() => {
-                enemy.markedForRemoval = true;
-                bottle.markedForRemoval = true;
-            }, bottle.BOTTLE_SPLASH.length * 100); // 100ms pro Frame
+            this.handleChickenBottleHit(enemy, bottle);
         } else if (enemy instanceof ChickenEndboss) {
-            enemy.takeBottleHit();
-            // bottle.startSplash();
-            setTimeout(() => {
-                bottle.markedForRemoval = true;
-            }, bottle.BOTTLE_SPLASH.length * 100);
+            this.handleEndbossBottleHit(enemy, bottle);
         }
+    }
+
+    handleChickenBottleHit(enemy, bottle) {
+        enemy.energy = 0;
+        this.playChickenStompSound();
+        enemy.animateDeath && enemy.animateDeath();
+        if (enemy instanceof MiniChicken) {
+            this.playMiniChickenExplodeSound();
+        }
+        bottle.startSplash();
+        this.removeChickenAndBottleLater(enemy, bottle);
+    }
+
+    playChickenStompSound() {
+        AudioHub.CHICKEN_STOMP.currentTime = 0;
+        AudioHub.CHICKEN_STOMP.volume = 0.1;
+        AudioHub.CHICKEN_STOMP.play();
+    }
+
+    playMiniChickenExplodeSound() {
+        AudioHub.MINI_CHICKEN_EXPLODE2.currentTime = 0;
+        AudioHub.MINI_CHICKEN_EXPLODE2.play();
+    }
+
+    removeChickenAndBottleLater(enemy, bottle) {
+        setTimeout(() => {
+            enemy.markedForRemoval = true;
+            bottle.markedForRemoval = true;
+        }, bottle.BOTTLE_SPLASH.length * 100);
+    }
+
+    handleEndbossBottleHit(enemy, bottle) {
+        enemy.takeBottleHit();
+        setTimeout(() => {
+            bottle.markedForRemoval = true;
+        }, bottle.BOTTLE_SPLASH.length * 100);
     }
 
     checkCollectableCollision() {
         this.level.collectableObjects = this.level.collectableObjects.filter(obj => {
             if (this.character.isColliding(obj)) {
-                if (obj instanceof CollectableCoin) {
-                    this.collectedCoins++;
-                    // AudioHub.COIN_COLLECT.pause();
-                    AudioHub.COIN_COLLECT.currentTime = 0;
-                    AudioHub.COIN_COLLECT.play()
-                    this.coinStatusBar.setPercentage(this.collectedCoins / 12 * 100);
-                }
-                if (obj instanceof CollectableBottle) {
-                    this.collectedBottles++;
-                    AudioHub.BOTTLE_COLLECT.currentTime = 0;
-                    AudioHub.BOTTLE_COLLECT.volume = 0.4;
-                    AudioHub.BOTTLE_COLLECT.play()
-                    this.bottleStatusBar.setPercentage(this.collectedBottles / 20 * 100);
-                }
+                this.handleCollectable(obj);
                 return false;
             }
             return true;
         });
     }
 
-    checkThrowObjects() {
-        if (this.keyboard.D && this.collectedBottles > 0 && !this.throwCooldown) {
-            const facingLeft = this.character.otherDirection;
-            const startX = facingLeft
-                ? this.character.x - 30                  // leicht vor der linken Hand
-                : this.character.x + this.character.width - 30;
-            const startY = this.character.y + this.character.height * 0.45; // ungefähr Handhöhe
-
-            const bottle = new ThrowableObject(startX, startY, facingLeft);
-            this.throwableObjects.push(bottle);
-            this.collectedBottles--;
-            this.throwCooldown = true;
-            // AudioHub.THROW.pause();
-            AudioHub.THROW.currentTime = 0;
-            AudioHub.THROW.volume = 0.8;
-            AudioHub.THROW.play()
-            setTimeout(() => this.throwCooldown = false, 300);
+    handleCollectable(obj) {
+        if (obj instanceof CollectableCoin) {
+            this.collectCoin();
         }
+        if (obj instanceof CollectableBottle) {
+            this.collectBottle();
+        }
+    }
+
+    collectCoin() {
+        this.collectedCoins++;
+        AudioHub.COIN_COLLECT.currentTime = 0;
+        AudioHub.COIN_COLLECT.play();
+        this.coinStatusBar.setPercentage(this.collectedCoins / 12 * 100);
+    }
+
+    collectBottle() {
+        this.collectedBottles++;
+        AudioHub.BOTTLE_COLLECT.currentTime = 0;
+        AudioHub.BOTTLE_COLLECT.volume = 0.4;
+        AudioHub.BOTTLE_COLLECT.play();
+        this.bottleStatusBar.setPercentage(this.collectedBottles / 20 * 100);
+    }
+
+    checkThrowObjects() {
+        if (this.canThrowBottle()) {
+            const { startX, startY, facingLeft } = this.getBottleStartPosition();
+            this.spawnThrowableBottle(startX, startY, facingLeft);
+            this.handleBottleThrowEffects();
+        }
+    }
+
+    canThrowBottle() {
+        return this.keyboard.D && this.collectedBottles > 0 && !this.throwCooldown;
+    }
+
+    getBottleStartPosition() {
+        const facingLeft = this.character.otherDirection;
+        const startX = facingLeft
+            ? this.character.x - 30
+            : this.character.x + this.character.width - 30;
+        const startY = this.character.y + this.character.height * 0.45;
+        return { startX, startY, facingLeft };
+    }
+
+    spawnThrowableBottle(startX, startY, facingLeft) {
+        const bottle = new ThrowableObject(startX, startY, facingLeft);
+        this.throwableObjects.push(bottle);
+        this.collectedBottles--;
+        this.bottleStatusBar.setPercentage(this.collectedBottles / 20 * 100); // <-- Prozent aktualisieren!
+        this.throwCooldown = true;
+    }
+
+    handleBottleThrowEffects() {
+        AudioHub.THROW.currentTime = 0;
+        AudioHub.THROW.volume = 0.8;
+        AudioHub.THROW.play();
+        setTimeout(() => this.throwCooldown = false, 300);
     }
 
     drawCamAndBackground() {
@@ -400,13 +438,14 @@ class World {
         this.addToMap(this.statusBar);
         this.addToMap(this.coinStatusBar);
         this.addToMap(this.bottleStatusBar);
+        this.bottleStatusBar.draw(this.ctx, this.collectedBottles);
     }
 
     drawEnbossStatusBar() {
         this.enemies.forEach(enemy => {
             if (enemy instanceof ChickenEndboss && enemy.statusBar) {
                 const worldX = enemy.x + enemy.width / 2 - enemy.statusBar.width / 2;
-                const worldY = enemy.y - enemy.statusBar.height - 2 + 150; // 20 Pixel weiter unten
+                const worldY = enemy.y - enemy.statusBar.height - 2 + 150; 
                 const screenX = worldX + this.camera_x;
                 const screenY = worldY;
                 enemy.statusBar.x = screenX;

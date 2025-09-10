@@ -107,22 +107,42 @@ class Character extends MoveableObject {
     }
 
     updateMovement() {
-        if (!this.isEndbossAlive()) {
-            if (this.animations) clearInterval(this.animations);
-            AudioHub.PEPE_WALK.pause();
-            return;
-        }
+        if (!this.isEndbossAlive()) return this.handleEndbossDead();
+        let moved = this.handleMovement();
+        this.handleWalkSound(moved);
+        this.handleLandingSound();
+        this.world.camera_x = -this.x + 100;
+    }
+
+    handleEndbossDead() {
+        if (this.animations) clearInterval(this.animations);
+        AudioHub.PEPE_WALK.pause();
+    }
+
+    handleMovement() {
         let moved = false;
-        if (this.canMoveRight()) { this.moveRight(); this.otherDirection = false; moved = true; }
-        if (this.canMoveLeft()) { this.moveLeft(); this.otherDirection = true; moved = true; }
+        if (this.canMoveRight()) {
+            this.moveRight();
+            this.otherDirection = false;
+            moved = true;
+        }
+        if (this.canMoveLeft()) {
+            this.moveLeft();
+            this.otherDirection = true;
+            moved = true;
+        }
         if (this.canJump()) {
             this.jump(20);
             AudioHub.PEPE_JUMP.currentTime = 0;
             AudioHub.PEPE_JUMP.play();
             moved = true;
         }
+        if (moved) this.markAction();
+        return moved;
+    }
+
+    handleWalkSound(moved) {
         if (moved) {
-            this.markAction();
             if (AudioHub.PEPE_WALK.paused) {
                 AudioHub.PEPE_WALK.currentTime = 0;
                 AudioHub.PEPE_WALK.loop = true;
@@ -134,14 +154,14 @@ class Character extends MoveableObject {
                 AudioHub.PEPE_WALK.currentTime = 0;
             }
         }
-        // Landingsound abspielen, wenn gerade gelandet
+    }
+
+    handleLandingSound() {
         if (this.wasAboveGround && !this.isAboveGround()) {
             AudioHub.PEPE_LAND.currentTime = 0;
             AudioHub.PEPE_LAND.play();
         }
         this.wasAboveGround = this.isAboveGround();
-
-        this.world.camera_x = -this.x + 100;
     }
 
     isEndbossAlive() {
@@ -168,19 +188,28 @@ class Character extends MoveableObject {
         if (this.isHurt()) return this.playAnimation(this.IMAGES_HURT);
         if (this.isDead()) return this.playDeathSequence();
         if (this.isAboveGround()) return this.playAnimation(this.IMAGES_JUMPING);
-        if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) return this.playAnimation(this.IMAGES_WALKING);
-        if (this.isLongIdle()) {
-            if (AudioHub.PEPE_SLEEP.paused) {
-                AudioHub.PEPE_SLEEP.currentTime = 0;
-                AudioHub.PEPE_SLEEP.volume = 0.2;
-                AudioHub.PEPE_SLEEP.play();
-            }
-            return this.playAnimation(this.IMAGES_LONG_IDLE);
-        } else {
-            if (!AudioHub.PEPE_SLEEP.paused) {
-                AudioHub.PEPE_SLEEP.pause();
-                AudioHub.PEPE_SLEEP.currentTime = 0;
-            }
+        if (this.isWalking()) return this.playAnimation(this.IMAGES_WALKING);
+        if (this.isLongIdle()) return this.handleLongIdle();
+        this.handleIdle();
+    }
+
+    isWalking() {
+        return this.world.keyboard.RIGHT || this.world.keyboard.LEFT;
+    }
+
+    handleLongIdle() {
+        if (AudioHub.PEPE_SLEEP.paused) {
+            AudioHub.PEPE_SLEEP.currentTime = 0;
+            AudioHub.PEPE_SLEEP.volume = 0.2;
+            AudioHub.PEPE_SLEEP.play();
+        }
+        return this.playAnimation(this.IMAGES_LONG_IDLE);
+    }
+
+    handleIdle() {
+        if (!AudioHub.PEPE_SLEEP.paused) {
+            AudioHub.PEPE_SLEEP.pause();
+            AudioHub.PEPE_SLEEP.currentTime = 0;
         }
         AudioHub.PEPE_SLEEP.pause();
         this.playAnimation(this.IMAGES_IDLE);
@@ -213,7 +242,10 @@ class Character extends MoveableObject {
         this.width = 300;
         this.showEndscreen();
         this.y = 320;
-        // AudioHub.CHICKEN_STOMP.pause();
+        this.playLoseSound();
+    }
+
+    playLoseSound() {
         AudioHub.LOOSER.currentTime = 0;
         AudioHub.LOOSER.volume = 0.3;
         AudioHub.LOOSER.play();

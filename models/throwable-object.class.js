@@ -29,7 +29,7 @@ class ThrowableObject extends MoveableObject {
         this.y = y;
         this.height = 80;
         this.width = 60;
-        this.direction = facingLeft ? -1 : 1;   // -1 = nach links, 1 = nach rechts
+        this.direction = facingLeft ? -1 : 1;
         this.throw();
 
     }
@@ -41,7 +41,7 @@ class ThrowableObject extends MoveableObject {
         this.throwAnimation();
         this.moveInterval = setInterval(() => {
             if (!this.groundContact) {
-                this.x += 10 * this.direction;   // Richtung beachten
+                this.x += 10 * this.direction;
             } else {
                 clearInterval(this.moveInterval);
             }
@@ -50,7 +50,7 @@ class ThrowableObject extends MoveableObject {
 
     throwAnimation() {
         let splashStarted = false;
-        let splashSoundPlayed = false; // <--- NEU
+        let splashSoundPlayed = false;
         let animationInterval = setInterval(() => {
             if (!this.groundContact) {
                 this.playAnimation(this.IMAGES_ROTATE_BOTTLE);
@@ -69,22 +69,24 @@ class ThrowableObject extends MoveableObject {
     }
 
     startSplash() {
-    if (this.isSplashing) return; // Splash nur einmal starten!
-    this.isSplashing = true;
-    this.currentImage = 0;
-    let splashInterval = setInterval(() => {
-        this.playAnimation(this.BOTTLE_SPLASH);
-        this.currentImage++;
-        if (this.currentImage >= this.BOTTLE_SPLASH.length) {
-            clearInterval(splashInterval);
-            // Jetzt erst entfernen!
-            this.markedForRemoval = true;
-        }
-    }, 100); // 100ms pro Frame
-    // Splash-Sound abspielen
-    AudioHub.BOTTLE_SPLASH.volume = 0.3;
-    AudioHub.BOTTLE_SPLASH.currentTime = 0;
-    AudioHub.BOTTLE_SPLASH.play();
-}
+        if (this.isSplashing) return; // Splash nur einmal starten!
+        this.isSplashing = true;
+        this.currentImage = 0;
+        let splashInterval = setInterval(() => {
+            this.playAnimation(this.BOTTLE_SPLASH);
+            this.currentImage++;
+            if (this.currentImage >= this.BOTTLE_SPLASH.length) {
+                clearInterval(splashInterval);
+                this.markedForRemoval = true;
+            }
+        }, 100);
+        this.splashSound();
+    }
+
+    splashSound(){
+        AudioHub.BOTTLE_SPLASH.volume = 0.3;
+        AudioHub.BOTTLE_SPLASH.currentTime = 0;
+        AudioHub.BOTTLE_SPLASH.play();
+    }
 
 }

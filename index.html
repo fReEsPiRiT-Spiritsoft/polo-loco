@@ -7,6 +7,7 @@
     <title>El Pollo Loco by P.Schmidt</title>
     <link href="https://fonts.googleapis.com/css2?family=Rye&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="img/fav.ico">
     <script src="models/audio-hub.class.js"></script>
     
     <script src="models/drawable-object.class.js"></script>
@@ -64,13 +65,13 @@
                 <button class="btn" onclick="restartGame()">Neustart</button>
             </div>
         </div>
-        <!-- ...existing code... -->
+
         <div id="rotateNotice">
             <img src="img/1_controls/rotate.png" alt="Rotate your phone">
         </div>
-        <!-- ...existing code... -->
+
         <canvas id="canvas" width="720" height="480" tabindex="0"></canvas>
-        <!-- Touch-Controls für Mobile Landscape -->
+
         <div id="touchControls" class="touch-controls hidden">
             <div class=" direction">
                 <button class="touch-btn" id="btnLeft"><img src="img/1_controls/arrow-left.png" alt="Left"></button>
@@ -129,8 +130,8 @@
         <div class="ui" id="ui">
             <button class="btn" onclick="goToMainMenu()">Hauptmenu</button>
             <button class="btn" id="btnRestart" onclick="restartGame()">Neustart</button>
-            <button class="btn" id="btnRestart" onclick="toggleFullscreen()">Vollbild</button>
-            <button class="btn" id="btnRestart" onclick="restartGame()">Stumm</button>
+            <button class="btn" id="btnFullscreen" onclick="toggleFullscreen()">Vollbild</button>
+            <button class="btn" id="btnMute" onclick="toggleMute()">Stumm</button>
         </div>
     </div>
     </div>

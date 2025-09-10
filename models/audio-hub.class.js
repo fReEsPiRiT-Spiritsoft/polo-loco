@@ -1,5 +1,9 @@
+/**
+ * @class AudioHub
+ * @classdesc Central hub for managing all game audio. Provides static references to all sounds,
+ *            as well as utility methods for playback, stopping, and volume control.
+ */
 class AudioHub {
-    // Audiodateien für Piano, Guitar, DRUMS
     static CHICKEN_STOMP = new Audio('./audio/chicken_stomp.mp3');
     static FIGHT_FOR_ENDBOSS = new Audio('./audio/fight_for_endboss.mp3');
     static INTRO = new Audio('./audio/intro.mp3');
@@ -21,6 +25,10 @@ class AudioHub {
     static PEPE_SLEEP = new Audio('./audio/pepe_sleep.mp3');
     static THROW = new Audio('./audio/throw.mp3');
 
+    /**
+     * Array containing all audio elements for easy iteration.
+     * @type {HTMLAudioElement[]}
+     */
     static allSounds = [
         AudioHub.CHICKEN_STOMP,
         AudioHub.FIGHT_FOR_ENDBOSS,
@@ -44,45 +52,53 @@ class AudioHub {
         AudioHub.THROW
     ];
 
-
-    // Spielt eine einzelne Audiodatei ab
+    /**
+     * Plays a single sound and visually activates the corresponding instrument image.
+     * @param {HTMLAudioElement} sound - The audio element to play.
+     * @param {string} instrumentId - The DOM id of the instrument image to activate.
+     */
     static playOne(sound, instrumentId) {
-        if (sound.readyState == 4) {  // instrumentId nur wichtig für die Visualisierung
-            sound.volume = 0.2;  // Setzt die Lautstärke auf 0.2 = 20% / 1 = 100%
-            sound.currentTime = 0;  // Startet ab einer bestimmten stelle (0=Anfang/ 5 = 5 sec.)
-            sound.play();  // Spielt das übergebene Sound-Objekt ab
-            const instrumentImg = document.getElementById(instrumentId);  // nur wichtig für die Visualisierung
-            instrumentImg.classList.add('active');  // nur wichtig für die Visualisierung
+        if (sound.readyState == 4) { 
+            sound.volume = 0.2;  
+            sound.currentTime = 0; 
+            sound.play(); 
+            const instrumentImg = document.getElementById(instrumentId);  
+            instrumentImg.classList.add('active');  
         }
     }
 
-
-    // Stoppt das Abspielen aller Audiodateien
+    /**
+     * Stops all sounds and resets the volume slider and instrument images.
+     */
     static stopAll() {
         AudioHub.allSounds.forEach(sound => {
-            sound.pause();  // Pausiert jedes Audio in der Liste
+            sound.pause();
         });
-        document.getElementById('volume').value = 0.2;  // Setzt den Sound-Slider wieder auf 0.2
-        const instrumentImages = document.querySelectorAll('.sound_img'); // nur wichtig für die Visualisierung
-        instrumentImages.forEach(img => img.classList.remove('active')); // nur wichtig für die Visualisierung
+        document.getElementById('volume').value = 0.2; 
+        const instrumentImages = document.querySelectorAll('.sound_img'); 
+        instrumentImages.forEach(img => img.classList.remove('active')); 
     }
 
-
-    // Stoppt das Abspielen einer einzelnen Audiodatei
+    /**
+     * Stops a single sound and visually deactivates the corresponding instrument image.
+     * @param {HTMLAudioElement} sound - The audio element to stop.
+     * @param {string} instrumentId - The DOM id of the instrument image to deactivate.
+     */
     static stopOne(sound, instrumentId) {
-        sound.pause();  // Pausiert das übergebene Audio
-        const instrumentImg = document.getElementById(instrumentId); // nur wichtig für die Visualisierung
-        instrumentImg.classList.remove('active'); // nur wichtig für die Visualisierung
+        sound.pause();  
+        const instrumentImg = document.getElementById(instrumentId); 
+        instrumentImg.classList.remove('active'); 
     }
 
 
-    // ##########################################################################################################################
-    // ################################################  Sound Slider - BONUS !  ################################################
-    // Setzt die Lautstärke für alle Audiodateien
+    /**
+     * Sets the volume for all provided audio elements based on the volume slider value.
+     * @param {HTMLAudioElement[]} volumeSlider - Array of audio elements to set the volume for.
+     */
     static objSetVolume(volumeSlider) {
-        let volumeValue = document.getElementById('volume').value;  // Holt den aktuellen Lautstärkewert aus dem Inputfeld
+        let volumeValue = document.getElementById('volume').value; 
         volumeSlider.forEach(sound => {
-            sound.volume = volumeValue;  // Setzt die Lautstärke für jedes Audio wie im Slider angegeben
+            sound.volume = volumeValue;  
         });
     }
 }

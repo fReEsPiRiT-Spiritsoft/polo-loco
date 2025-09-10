@@ -26,7 +26,7 @@ class ChickenEndboss extends MoveableObject {
     JUMP_DISTANCE_MAX = 1200;
 
     // NEU: Dash-Konfiguration
-    DASH_DISTANCE_MAX = 900;          // bis zu welcher Distanz ein Dash gestartet werden darf
+    DASH_DISTANCE_MAX = 800;          // bis zu welcher Distanz ein Dash gestartet werden darf
     DASH_MIN_DISTANCE = 180;          // nicht dashen wenn schon direkt dran (normale Attacke übernimmt)
     DASH_COOLDOWN = 4000;             // ms
     DASH_DURATION = 620;              // ms aktive Dash-Phase
@@ -103,8 +103,8 @@ class ChickenEndboss extends MoveableObject {
     }
 
     startLoop() {
-        this.aiInterval = setInterval(() => this.update(), 100); // Logik
-        this.animInterval = setInterval(() => this.tickAnimation(), 140); // Frame-Wechsel
+        this.aiInterval = setInterval(() => this.update(), 100);
+        this.animInterval = setInterval(() => this.tickAnimation(), 140); 
     }
 
     updateStatusBar() {
@@ -114,83 +114,44 @@ class ChickenEndboss extends MoveableObject {
 
     update() {
         if (this.isDead) return;
-        if (typeof world === 'undefined' || !world.character || !world.canvas) return;
-
+        if (!world?.character) return;
         const now = performance.now();
-        // Hurt-Phase
-        if (this.isHurt) {
-            if (now >= this.hurtUntil) {
-                this.isHurt = false;
-            } else {
-                this.updateJumpPhysics();
-                this.updateDashPhysics();
-                return;
-            }
-        }
-
+        if (this.isHurt) return this.updateHurt(now);
         const dist = this.x - world.character.x;
         const absDist = Math.abs(dist);
-
         this.updateFacing(dist);
         this.updateJumpPhysics();
         this.updateDashPhysics();
-
-        // Während Dash keine weiteren Entscheidungen
         if (this.isDashing) return;
-
-        if (!this.alerted) {
-            if (this.shouldAlert(absDist)) this.startAlert(now);
-            return;
-        }
+        if (!this.alerted) return this.checkAlert(absDist, now);
         if (now - this.alertStartedAt < this.ALERT_DURATION) return;
+        if (this.canDash(now, absDist)) return this.startDash(now, dist);
+        if (this.canAttack(now, absDist) && !this.isJumping) return this.startAttack(now);
+        if (this.canJump(now, absDist) && !this.isJumping) return this.startJump(now, dist);
+        if (!this.isJumping && !this.isAttacking) this.chase(dist);
+    }
 
-        // ZUERST: Dash prüfen (höhere Priorität als normaler Attack / Jump)
-        if (this.canDash(now, absDist)) {
-            this.startDash(now, dist);
-            return;
-        }
+    updateHurt(now) {
+        if (now >= this.hurtUntil) this.isHurt = false;
+        this.updateJumpPhysics();
+        this.updateDashPhysics();
+    }
 
-        if (this.canAttack(now, absDist)) {
-            this.startAttack(now);
-            return;
-        }
-
-        if (this.canJump(now, absDist)) {
-            this.startJump(now, dist);
-            return;
-        }
-
-        if (!this.isJumping && !this.isAttacking) {
-            this.chase(dist);
-        }
+    checkAlert(absDist, now) {
+        if (this.shouldAlert(absDist)) this.startAlert(now);
     }
 
     tickAnimation() {
-        if (this.isDead) {
-            this.playAnimation(this.IMAGES_DEAD);
-            return;
-        }
-        if (!this.alerted) {
-            this.playAnimation(this.IMAGES_ALERT);
-            return;
-        }
-        if (this.isHurt) {
-            this.playAnimation(this.IMAGES_HURT);
-            return;
-        }
+        if (this.isDead) { this.playAnimation(this.IMAGES_DEAD); return; }
+        if (!this.alerted) { this.playAnimation(this.IMAGES_ALERT); return; }
+        if (this.isHurt) { this.playAnimation(this.IMAGES_HURT); return; }
         if (this.isDashing) {
-            // Keine eigenen Dash-Frames vorhanden? -> Attack-Frames wiederverwenden
+            // Optional: eigenes Dash-Set -> this.playAnimation(this.IMAGES_DASH);
             this.playAnimation(this.IMAGES_ATTACK);
             return;
         }
-        if (this.isAttacking) {
-            this.playAnimation(this.IMAGES_ATTACK);
-            return;
-        }
-        if (this.isJumping) {
-            this.playAnimation(this.IMAGES_HURT);
-            return;
-        }
+        if (this.isAttacking) { this.playAnimation(this.IMAGES_ATTACK); return; }
+        if (this.isJumping) { this.playAnimation(this.IMAGES_HURT); return; } // Platzhalter für Jump-Frames
         this.playAnimation(this.IMAGES_WALKING);
     }
 
@@ -227,23 +188,22 @@ class ChickenEndboss extends MoveableObject {
         this.isAttacking = true;
         this.currentImage = 0;
         this.nextAttackAt = now + this.ATTACK_COOLDOWN;
-
-        // Speed für Angriff erhöhen
         const oldSpeed = this.baseSpeed;
-        this.baseSpeed = 18; // z.B. doppelt so schnell
-
+        this.baseSpeed = 18;
+        this.attackHit(now);
         setTimeout(() => {
-            if (!this.isDead &&
-                Math.abs(this.x - world.character.x) <= this.ATTACK_DISTANCE + 20) {
+            this.isAttacking = false;
+            this.baseSpeed = oldSpeed;
+        }, 750);
+    }
+
+    attackHit(now) {
+        setTimeout(() => {
+            if (!this.isDead && Math.abs(this.x - world.character.x) <= this.ATTACK_DISTANCE + 20) {
                 world.character.hit();
                 world.statusBar.setPercentage(world.character.energy);
             }
         }, 300);
-
-        setTimeout(() => {
-            this.isAttacking = false;
-            this.baseSpeed = oldSpeed; // Speed zurücksetzen
-        }, 750);
     }
 
     startJump(now, dist) {
@@ -256,11 +216,9 @@ class ChickenEndboss extends MoveableObject {
 
     chase(dist) {
         const dirLeft = dist > 0;
-        if (dirLeft) {
-            this.moveLeft();
-        } else {
-            if (this.moveRight) this.moveRight(); else this.x += this.baseSpeed;
-        }
+        if (dirLeft) this.moveLeft();
+        else if (this.moveRight) this.moveRight();
+        else this.x += this.baseSpeed;
         this.x = Math.max(0, this.x);
     }
 
@@ -270,12 +228,13 @@ class ChickenEndboss extends MoveableObject {
         this.x += this.horizontalPush;
         this.y -= this.jumpVy;
         this.jumpVy -= this.gravity;
+        if (this.y >= this.groundY) this.land();
+    }
 
-        if (this.y >= this.groundY) {
-            this.y = this.groundY;
-            this.jumpVy = 0;
-            this.isJumping = false;
-        }
+    land() {
+        this.y = this.groundY;
+        this.jumpVy = 0;
+        this.isJumping = false;
     }
 
     onGround() {
@@ -284,11 +243,11 @@ class ChickenEndboss extends MoveableObject {
 
 
     canDash(now, absDist) {
-        if (this.isAttacking || this.isJumping) return false;
+        if (this.isAttacking) return false;
+        // Sprung NICHT mehr ausschließen, damit Luft-Dash möglich ist
         if (now - this.lastDashAt < this.DASH_COOLDOWN) return false;
         if (absDist > this.DASH_DISTANCE_MAX) return false;
         if (absDist < this.DASH_MIN_DISTANCE) return false;
-        // Zufällige Chance, damit es nicht permanent spammt
         return Math.random() < this.DASH_TRIGGER_CHANCE;
     }
 
@@ -296,11 +255,9 @@ class ChickenEndboss extends MoveableObject {
         this.isDashing = true;
         this.lastDashAt = now;
         this.currentImage = 0;
-        // Richtung bestimmen
         this.dashDir = dist > 0 ? -1 : 1;
         this.dashEndsAt = now + this.DASH_DURATION;
-
-        // Optional: Sofort kleinen Schaden, wenn beim Start sehr nah
+        // Sprungstatus bleibt bestehen (kein this.isJumping = false)
         if (Math.abs(dist) < this.ATTACK_DISTANCE + 30) {
             world.character.hit();
             world.statusBar.setPercentage(world.character.energy);
@@ -314,16 +271,19 @@ class ChickenEndboss extends MoveableObject {
         this.x += this.dashDir * this.DASH_SPEED;
 
         // Kollisions-Schaden während Dash (einmal pro Tick möglich)
-        if (Math.abs(this.x - world.character.x) <= this.ATTACK_DISTANCE) {
-            world.character.hit();
-            world.statusBar.setPercentage(world.character.energy);
-        }
+        this.dashCollision();
 
         if (now >= this.dashEndsAt) {
             this.isDashing = false;
         }
     }
 
+    dashCollision() {
+        if (Math.abs(this.x - world.character.x) <= this.ATTACK_DISTANCE) {
+            world.character.hit();
+            world.statusBar.setPercentage(world.character.energy);
+        }
+    }
 
     updateFacing(dist) {
         this.otherDirection = dist < 0;
@@ -352,39 +312,35 @@ class ChickenEndboss extends MoveableObject {
         this.isHurt = false;
         clearInterval(this.aiInterval);
         clearInterval(this.animInterval);
+        this.playDeathAnimation();
+        setTimeout(() => this.finishDeath(), 2000);
+    }
 
-        // Todesanimation abspielen
+    playDeathAnimation() {
         let i = 0;
         const deadAnim = setInterval(() => {
             this.img = this.imageCache[this.IMAGES_DEAD[i]];
             i++;
-            if (i >= this.IMAGES_DEAD.length) {
-                clearInterval(deadAnim);
-            }
+            if (i >= this.IMAGES_DEAD.length) clearInterval(deadAnim);
         }, 180);
+    }
 
-        // Nach 2 Sekunden: Winningscreen anzeigen und Endboss entfernen
-        setTimeout(() => {
-            // Alle anderen Gegner entfernen (optional)
-            if (world && world.enemies) {
-                world.enemies.forEach(enemy => {
-                    if (enemy !== this && enemy.energy > 0) {
-                        enemy.energy = 0;
-                        enemy.markedForRemoval = true;
-                        enemy.animateDeath && enemy.animateDeath();
-                    }
-                });
-            }
-            AudioHub.WINNER.currentTime = 0;
-            AudioHub.WINNER.volume = 0.2;
-            AudioHub.WINNER.play();
-            // Winningscreen anzeigen
-            const win = document.getElementById('winningscreen');
-            if (win) win.classList.remove('hidden');
-            if (world) world.paused = true;
-
-            // Endboss erst jetzt entfernen
-            this.markedForRemoval = true;
-        }, 2000);
+    finishDeath() {
+        if (world && world.enemies) {
+            world.enemies.forEach(enemy => {
+                if (enemy !== this && enemy.energy > 0) {
+                    enemy.energy = 0;
+                    enemy.markedForRemoval = true;
+                    enemy.animateDeath && enemy.animateDeath();
+                }
+            });
+        }
+        AudioHub.WINNER.currentTime = 0;
+        AudioHub.WINNER.volume = 0.2;
+        AudioHub.WINNER.play();
+        const win = document.getElementById('winningscreen');
+        if (win) win.classList.remove('hidden');
+        if (world) world.paused = true;
+        this.markedForRemoval = true;
     }
 }

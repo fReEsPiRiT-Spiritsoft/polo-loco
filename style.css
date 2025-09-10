@@ -418,6 +418,11 @@ canvas {
     display: none !important;
 }
 
+#btnMute.muted {
+    background: #b22222;
+    border-color: #b22222;
+}
+
 /* Nur auf Mobile und Landscape anzeigen */
 @media (orientation: landscape) and (max-width: 900px) {
     #touchControls {

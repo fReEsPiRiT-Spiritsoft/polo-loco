@@ -3,10 +3,11 @@ let world;
 let keyboard = new Keyboard();
 let lastThrowTime = 0;
 let selectedDifficulty = 'medium';
+let isMuted = false;
 
 function init() {
     canvas = document.getElementById('canvas');
-    canvas.addEventListener('contextmenu', function(e) {
+    canvas.addEventListener('contextmenu', function (e) {
         e.preventDefault();
     });
 }
@@ -18,16 +19,32 @@ function getDifficultySettings() {
         case 'medium':
             return { endbossEnergy: 100, characterEnergy: 100, cloudSpeed: 0.4, darkClouds: false, rain: false };
         case 'hard':
-            return { endbossEnergy: 140, characterEnergy: 50, cloudSpeed: 1.5, darkClouds: true, rain: true };
+            return { endbossEnergy: 160, characterEnergy: 40, cloudSpeed: 1.5, darkClouds: true, rain: true };
         default:
             return { endbossEnergy: 100, characterEnergy: 100, cloudSpeed: 0.4, darkClouds: false, rain: false };
     }
 }
 
 function startGame() {
-    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    const isPortrait = window.matchMedia("(orientation: portrait)").matches;
+    const isMobile = isMobileDevice();
+    const isPortrait = isPortraitMode();
     const settings = getDifficultySettings();
+    setupLevel(settings);
+    hideStartScreen();
+    handleFullscreen(isMobile, isPortrait);
+    handleWeatherSounds();
+    showTouchControlsIfNeeded();
+}
+
+function isMobileDevice() {
+    return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+function isPortraitMode() {
+    return window.matchMedia("(orientation: portrait)").matches;
+}
+
+function setupLevel(settings) {
     initLevel1(settings.darkClouds);
     world = new World(canvas, keyboard, level1);
     world.start();
@@ -39,26 +56,58 @@ function startGame() {
         if (settings.darkClouds) darkenClouds(world);
         if (settings.rain) world.enableRain = true;
     }
+}
+
+function hideStartScreen() {
     const s = document.getElementById('startscreen');
     if (s) s.style.display = 'none';
+}
+
+function handleFullscreen(isMobile, isPortrait) {
     if (isMobile && !isPortrait && !document.fullscreenElement) {
         toggleFullscreen();
     }
+}
+
+function handleWeatherSounds() {
     if (selectedDifficulty === 'hard') {
-        AudioHub.RAIN_HARD.loop = true;
-        AudioHub.RAIN_HARD.currentTime = 0;
-        AudioHub.RAIN_HARD.volume = 0.2;
-        AudioHub.RAIN_HARD.play();
-        AudioHub.WINDY_HARD.pause();
-        AudioHub.WINDY_HARD.currentTime = 0;
+        playWindyAudio();
     } else {
-        AudioHub.WINDY_HARD.loop = true;
-        AudioHub.WINDY_HARD.currentTime = 0;
-        AudioHub.WINDY_HARD.volume = 0.2;
-        AudioHub.WINDY_HARD.play();
-        AudioHub.RAIN_HARD.pause();
-        AudioHub.RAIN_HARD.currentTime = 0;
+        playRainyAudio();
     }
+}
+
+function playWindyAudio() {
+    AudioHub.RAIN_HARD.loop = true;
+    AudioHub.RAIN_HARD.currentTime = 0;
+    AudioHub.RAIN_HARD.volume = 0.2;
+    AudioHub.RAIN_HARD.play();
+    AudioHub.WINDY_HARD.currentTime = 0;
+}
+
+function playRainyAudio() {
+    AudioHub.WINDY_HARD.loop = true;
+    AudioHub.WINDY_HARD.currentTime = 0;
+    AudioHub.WINDY_HARD.volume = 0.2;
+    AudioHub.WINDY_HARD.play();
+    AudioHub.RAIN_HARD.currentTime = 0;
+}
+
+function toggleMute() {
+    isMuted = !isMuted;
+    AudioHub.allSounds.forEach(sound => sound.muted = isMuted);
+
+    // Icon und Button-Style anpassen
+    const muteIcon = document.getElementById('muteIcon');
+    const btnMute = document.getElementById('btnMute');
+    if (isMuted) {
+        btnMute.classList.add('muted');
+    } else {
+        btnMute.classList.remove('muted');
+    }
+}
+
+function showTouchControlsIfNeeded() {
     if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
         const t = document.getElementById('touchControls');
         if (t) t.classList.remove('hidden');
@@ -78,13 +127,26 @@ function darkenClouds(world) {
 }
 
 function restartGame() {
+    destroyWorldIfExists();
+    const settings = getDifficultySettings();
+    setupRestartLevel(settings);
+    updateEndbossAndWorld(settings);
+    cleanScreen();
+}
+
+function destroyWorldIfExists() {
     if (world && typeof world.destroy === 'function') {
         world.destroy();
     }
-    const settings = getDifficultySettings();
+}
+
+function setupRestartLevel(settings) {
     initLevel1(settings.darkClouds);
     world = new World(canvas, keyboard, level1);
     world.start();
+}
+
+function updateEndbossAndWorld(settings) {
     const endboss = world.enemies.find(e => e instanceof ChickenEndboss);
     if (endboss) {
         endboss.energy = settings.endbossEnergy;
@@ -93,7 +155,6 @@ function restartGame() {
         if (settings.darkClouds) darkenClouds(world);
         if (settings.rain) world.enableRain = true;
     }
-    cleanScreen();
 }
 
 function cleanScreen() {
@@ -119,7 +180,6 @@ function toggleFullscreen() {
 
 function resizeCanvasToFullscreen() {
     const gameDiv = document.querySelector('.game');
-
     if (document.fullscreenElement === gameDiv) {
         gameDiv.style.width = '100vw';
         gameDiv.style.height = '100vh';
@@ -205,49 +265,43 @@ startGame = function () {
 };
 
 function setupTouchControls() {
-    const btnLeft = document.getElementById('btnLeft');
-    const btnRight = document.getElementById('btnRight');
-    const btnJump = document.getElementById('btnJump');
-    const btnThrow = document.getElementById('btnThrow');
-    function bindTouch(btn, key) {
-        btn.addEventListener('touchstart', e => {
-            e.preventDefault();
-            keyboard[key] = true;
-            if (key === 'D') {
-                const now = performance.now();
-                if (now - lastThrowTime > 750) {
-                    if (world) {
-                        world.checkThrowObjects();
-                    }
-                    lastThrowTime = now;
-                }
-            }
-        });
-        btn.addEventListener('touchend', e => {
-            e.preventDefault();
-            keyboard[key] = false;
-        });
-        btn.addEventListener('touchcancel', e => {
-            e.preventDefault();
-            keyboard[key] = false;
-        });
-    }
-
-    bindTouch(btnLeft, 'LEFT');
-    bindTouch(btnRight, 'RIGHT');
-    bindTouch(btnJump, 'SPACE');
-    bindTouch(btnThrow, 'D');
+    bindTouchButton('btnLeft', 'LEFT');
+    bindTouchButton('btnRight', 'RIGHT');
+    bindTouchButton('btnJump', 'SPACE');
+    bindTouchButton('btnThrow', 'D');
 }
 
+function bindTouchButton(elementId, key) {
+    const btn = document.getElementById(elementId);
+    if (!btn) return;
+    btn.addEventListener('touchstart', e => handleTouchStart(e, key));
+    btn.addEventListener('touchend', e => handleTouchEnd(e, key));
+    btn.addEventListener('touchcancel', e => handleTouchEnd(e, key));
+}
 
+function handleTouchStart(e, key) {
+    e.preventDefault();
+    keyboard[key] = true;
+    if (key === 'D') handleThrowOnTouch();
+}
 
-// Touch-Controls initialisieren, wenn DOM geladen
+function handleTouchEnd(e, key) {
+    e.preventDefault();
+    keyboard[key] = false;
+}
+
+function handleThrowOnTouch() {
+    const now = performance.now();
+    if (now - lastThrowTime > 750) {
+        if (world) world.checkThrowObjects();
+        lastThrowTime = now;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', setupTouchControls);
-
 document.addEventListener('fullscreenchange', resizeCanvasToFullscreen);
 document.addEventListener('fullscreenchange', resizeCanvasToFullscreen);
 window.addEventListener('resize', resizeCanvasToFullscreen);
-
 
 window.addEventListener('keydown', (event) => {
     // console.log(event.keyCode)
