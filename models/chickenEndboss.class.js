@@ -21,6 +21,18 @@ class ChickenEndboss extends MoveableObject {
     nextAttackAt = 0;
     hurtUntil = 0;
 
+    ATTACK_DISTANCE = 110;
+    JUMP_DISTANCE_MIN = 220;
+    JUMP_DISTANCE_MAX = 1200;
+
+    // NEU: Dash-Konfiguration
+    DASH_DISTANCE_MAX = 900;          // bis zu welcher Distanz ein Dash gestartet werden darf
+    DASH_MIN_DISTANCE = 180;          // nicht dashen wenn schon direkt dran (normale Attacke übernimmt)
+    DASH_COOLDOWN = 4000;             // ms
+    DASH_DURATION = 620;              // ms aktive Dash-Phase
+    DASH_SPEED = 42;                  // horizontale Geschwindigkeit während Dash
+    DASH_TRIGGER_CHANCE = 0.6; 
+
 
     ALERT_DURATION = 600;
     JUMP_COOLDOWN = 1800;
@@ -83,6 +95,8 @@ class ChickenEndboss extends MoveableObject {
         this.loadImages(this.IMAGES_HURT);
         this.loadImages(this.IMAGES_DEAD);
         this.startLoop();
+        this.lastDashAt = 0;
+        this.isDashing = false;
         this.maxEnergy = this.energy;
         this.statusBar = new EndbossStatusBar();
         this.updateStatusBar();
@@ -103,13 +117,13 @@ class ChickenEndboss extends MoveableObject {
         if (typeof world === 'undefined' || !world.character || !world.canvas) return;
 
         const now = performance.now();
-
-        // Hurt-Phase blockt andere Aktionen kurz
+        // Hurt-Phase
         if (this.isHurt) {
             if (now >= this.hurtUntil) {
                 this.isHurt = false;
             } else {
                 this.updateJumpPhysics();
+                this.updateDashPhysics();
                 return;
             }
         }
@@ -119,12 +133,22 @@ class ChickenEndboss extends MoveableObject {
 
         this.updateFacing(dist);
         this.updateJumpPhysics();
+        this.updateDashPhysics();
+
+        // Während Dash keine weiteren Entscheidungen
+        if (this.isDashing) return;
 
         if (!this.alerted) {
             if (this.shouldAlert(absDist)) this.startAlert(now);
             return;
         }
         if (now - this.alertStartedAt < this.ALERT_DURATION) return;
+
+        // ZUERST: Dash prüfen (höhere Priorität als normaler Attack / Jump)
+        if (this.canDash(now, absDist)) {
+            this.startDash(now, dist);
+            return;
+        }
 
         if (this.canAttack(now, absDist)) {
             this.startAttack(now);
@@ -139,15 +163,6 @@ class ChickenEndboss extends MoveableObject {
         if (!this.isJumping && !this.isAttacking) {
             this.chase(dist);
         }
-        // if (this.energy < 60) {
-        //     const mini = new MiniChicken();
-        //     mini.x = this.x + this.width / 2 - mini.width / 2; // mittig am Endboss
-        //     mini.y = this.y + this.height / 2 - mini.height / 2; // mittig am Endboss
-        //     mini.world = this.world; // Referenz setzen
-        //     this.world.enemies.push(mini);
-        //     this.world.enemies.push(mini);
-        //     this.world.enemies.push(mini);
-        // }
     }
 
     tickAnimation() {
@@ -161,6 +176,11 @@ class ChickenEndboss extends MoveableObject {
         }
         if (this.isHurt) {
             this.playAnimation(this.IMAGES_HURT);
+            return;
+        }
+        if (this.isDashing) {
+            // Keine eigenen Dash-Frames vorhanden? -> Attack-Frames wiederverwenden
+            this.playAnimation(this.IMAGES_ATTACK);
             return;
         }
         if (this.isAttacking) {
@@ -261,6 +281,49 @@ class ChickenEndboss extends MoveableObject {
     onGround() {
         return !this.isJumping && this.y >= this.groundY;
     }
+
+
+    canDash(now, absDist) {
+        if (this.isAttacking || this.isJumping) return false;
+        if (now - this.lastDashAt < this.DASH_COOLDOWN) return false;
+        if (absDist > this.DASH_DISTANCE_MAX) return false;
+        if (absDist < this.DASH_MIN_DISTANCE) return false;
+        // Zufällige Chance, damit es nicht permanent spammt
+        return Math.random() < this.DASH_TRIGGER_CHANCE;
+    }
+
+    startDash(now, dist) {
+        this.isDashing = true;
+        this.lastDashAt = now;
+        this.currentImage = 0;
+        // Richtung bestimmen
+        this.dashDir = dist > 0 ? -1 : 1;
+        this.dashEndsAt = now + this.DASH_DURATION;
+
+        // Optional: Sofort kleinen Schaden, wenn beim Start sehr nah
+        if (Math.abs(dist) < this.ATTACK_DISTANCE + 30) {
+            world.character.hit();
+            world.statusBar.setPercentage(world.character.energy);
+        }
+    }
+
+    updateDashPhysics() {
+        if (!this.isDashing) return;
+        const now = performance.now();
+        // Bewegung
+        this.x += this.dashDir * this.DASH_SPEED;
+
+        // Kollisions-Schaden während Dash (einmal pro Tick möglich)
+        if (Math.abs(this.x - world.character.x) <= this.ATTACK_DISTANCE) {
+            world.character.hit();
+            world.statusBar.setPercentage(world.character.energy);
+        }
+
+        if (now >= this.dashEndsAt) {
+            this.isDashing = false;
+        }
+    }
+
 
     updateFacing(dist) {
         this.otherDirection = dist < 0;

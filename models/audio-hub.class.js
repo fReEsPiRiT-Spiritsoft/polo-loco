@@ -15,6 +15,11 @@ class AudioHub {
     static RAIN_HARD = new Audio('./audio/rain_hard.mp3');
     static WINDY_HARD = new Audio('./audio/windy_hard.mp3');
     static WINNER = new Audio('./audio/winner.mp3');
+    static BOTTLE_SPLASH = new Audio('./audio/bottle_splash.mp3');
+    static COIN_COLLECT = new Audio('./audio/coin_collect.mp3');
+    static BOTTLE_COLLECT = new Audio('./audio/bottle_collect.mp3');
+    static PEPE_SLEEP = new Audio('./audio/pepe_sleep.mp3');
+    static THROW = new Audio('./audio/throw.mp3');
 
     static allSounds = [
         AudioHub.CHICKEN_STOMP,
@@ -31,7 +36,12 @@ class AudioHub {
         AudioHub.PEPE_WALK,
         AudioHub.RAIN_HARD,
         AudioHub.WINDY_HARD,
-        AudioHub.WINNER
+        AudioHub.WINNER,
+        AudioHub.BOTTLE_SPLASH,
+        AudioHub.COIN_COLLECT,
+        AudioHub.BOTTLE_COLLECT,
+        AudioHub.PEPE_SLEEP,
+        AudioHub.THROW
     ];
 
 

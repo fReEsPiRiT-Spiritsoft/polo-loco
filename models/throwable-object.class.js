@@ -1,3 +1,5 @@
+isSplashing = false;
+
 class ThrowableObject extends MoveableObject {
 
 
@@ -47,28 +49,42 @@ class ThrowableObject extends MoveableObject {
     }
 
     throwAnimation() {
-        let splashStarted = false; // Hilfsvariable, damit das Zurücksetzen nur einmal passiert
+        let splashStarted = false;
+        let splashSoundPlayed = false; // <--- NEU
         let animationInterval = setInterval(() => {
             if (!this.groundContact) {
                 this.playAnimation(this.IMAGES_ROTATE_BOTTLE);
             } else {
                 if (!splashStarted) {
-                    this.currentImage = 0; // Splash-Animation von vorne starten
+                    this.currentImage = 0;
                     splashStarted = true;
+                    this.startSplash();
                 }
                 this.playAnimation(this.BOTTLE_SPLASH);
                 if (this.currentImage >= this.BOTTLE_SPLASH.length) {
-                    clearInterval(animationInterval); // Animation beenden
+                    clearInterval(animationInterval);
                 }
             }
         }, 100);
     }
 
     startSplash() {
+    if (this.isSplashing) return; // Splash nur einmal starten!
+    this.isSplashing = true;
+    this.currentImage = 0;
+    let splashInterval = setInterval(() => {
         this.playAnimation(this.BOTTLE_SPLASH);
+        this.currentImage++;
         if (this.currentImage >= this.BOTTLE_SPLASH.length) {
-            clearInterval(this.animationInterval); // Animation beenden
+            clearInterval(splashInterval);
+            // Jetzt erst entfernen!
+            this.markedForRemoval = true;
         }
-    }
+    }, 100); // 100ms pro Frame
+    // Splash-Sound abspielen
+    AudioHub.BOTTLE_SPLASH.volume = 0.3;
+    AudioHub.BOTTLE_SPLASH.currentTime = 0;
+    AudioHub.BOTTLE_SPLASH.play();
+}
 
 }

@@ -6,6 +6,9 @@ let selectedDifficulty = 'medium';
 
 function init() {
     canvas = document.getElementById('canvas');
+    canvas.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+    });
 }
 
 function getDifficultySettings() {
@@ -55,6 +58,10 @@ function startGame() {
         AudioHub.WINDY_HARD.play();
         AudioHub.RAIN_HARD.pause();
         AudioHub.RAIN_HARD.currentTime = 0;
+    }
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+        const t = document.getElementById('touchControls');
+        if (t) t.classList.remove('hidden');
     }
 }
 
@@ -159,7 +166,6 @@ function updateRotateNotice() {
     const isPortrait = window.matchMedia("(orientation: portrait)").matches;
     const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     el.style.display = (isMobile && isPortrait) ? 'flex' : '';
-
 }
 
 function toggleMenu() {

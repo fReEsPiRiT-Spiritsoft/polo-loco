@@ -59,7 +59,7 @@ class World {
         this.setWorld();
         this.checkCollisions();
         this.run();
-        
+
     }
 
     start() {
@@ -241,7 +241,7 @@ class World {
                 this.statusBar.setPercentage(this.character.energy);
                 const now = performance.now();
                 if (now - this.lastHurtSound > 1000) { // 1000 ms = 1 Sekunde
-                    AudioHub.PEPE_HURT.pause();
+                    // AudioHub.PEPE_HURT.pause();
                     AudioHub.PEPE_HURT.currentTime = 0;
                     AudioHub.PEPE_HURT.play();
                     this.lastHurtSound = now;
@@ -256,6 +256,7 @@ class World {
                 enemy.energy = 0;
                 // AudioHub.CHICKEN_STOMP.pause();
                 AudioHub.CHICKEN_STOMP.currentTime = 0;
+                AudioHub.CHICKEN_STOMP.volume = 1;
                 AudioHub.CHICKEN_STOMP.play();
                 this.character.jump(20);
                 enemy.animateDeath && enemy.animateDeath();
@@ -279,7 +280,7 @@ class World {
             this.enemies.forEach(enemy => {
                 if (enemy.energy > 0 && bottle.isColliding(enemy) && !bottle.markedForRemoval) {
                     this.handleBottleHit(enemy, bottle);
-                    bottle.markedForRemoval = true; // Flasche nach erstem Treffer markieren!
+                    bottle.startSplash();
                 }
             });
         });
@@ -290,22 +291,29 @@ class World {
     handleBottleHit(enemy, bottle) {
         if (enemy instanceof Chicken || enemy instanceof MiniChicken) {
             enemy.energy = 0;
+            // AudioHub.CHICKEN_STOMP.pause();
+            AudioHub.CHICKEN_STOMP.currentTime = 0;
+            AudioHub.CHICKEN_STOMP.volume = 0.1;
+            AudioHub.CHICKEN_STOMP.play();
             enemy.animateDeath && enemy.animateDeath();
             if (enemy instanceof MiniChicken) {
-                AudioHub.MINI_CHICKEN_EXPLODE2.pause();
+                // AudioHub.MINI_CHICKEN_EXPLODE2.pause();
                 AudioHub.MINI_CHICKEN_EXPLODE2.currentTime = 0;
                 AudioHub.MINI_CHICKEN_EXPLODE2.play();
             }
+            // Splash-Animation starten
+            bottle.startSplash();
+            // Flasche erst nach Splash-Animation entfernen:
             setTimeout(() => {
                 enemy.markedForRemoval = true;
                 bottle.markedForRemoval = true;
-            }, 500);
+            }, bottle.BOTTLE_SPLASH.length * 100); // 100ms pro Frame
         } else if (enemy instanceof ChickenEndboss) {
             enemy.takeBottleHit();
-            bottle.startSplash();
+            // bottle.startSplash();
             setTimeout(() => {
                 bottle.markedForRemoval = true;
-            }, 500);
+            }, bottle.BOTTLE_SPLASH.length * 100);
         }
     }
 
@@ -314,10 +322,16 @@ class World {
             if (this.character.isColliding(obj)) {
                 if (obj instanceof CollectableCoin) {
                     this.collectedCoins++;
+                    // AudioHub.COIN_COLLECT.pause();
+                    AudioHub.COIN_COLLECT.currentTime = 0;
+                    AudioHub.COIN_COLLECT.play()
                     this.coinStatusBar.setPercentage(this.collectedCoins / 12 * 100);
                 }
                 if (obj instanceof CollectableBottle) {
                     this.collectedBottles++;
+                    AudioHub.BOTTLE_COLLECT.currentTime = 0;
+                    AudioHub.BOTTLE_COLLECT.volume = 0.4;
+                    AudioHub.BOTTLE_COLLECT.play()
                     this.bottleStatusBar.setPercentage(this.collectedBottles / 20 * 100);
                 }
                 return false;
@@ -338,6 +352,10 @@ class World {
             this.throwableObjects.push(bottle);
             this.collectedBottles--;
             this.throwCooldown = true;
+            // AudioHub.THROW.pause();
+            AudioHub.THROW.currentTime = 0;
+            AudioHub.THROW.volume = 0.8;
+            AudioHub.THROW.play()
             setTimeout(() => this.throwCooldown = false, 300);
         }
     }

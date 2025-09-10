@@ -169,7 +169,20 @@ class Character extends MoveableObject {
         if (this.isDead()) return this.playDeathSequence();
         if (this.isAboveGround()) return this.playAnimation(this.IMAGES_JUMPING);
         if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) return this.playAnimation(this.IMAGES_WALKING);
-        if (this.isLongIdle()) return this.playAnimation(this.IMAGES_LONG_IDLE);
+        if (this.isLongIdle()) {
+            if (AudioHub.PEPE_SLEEP.paused) {
+                AudioHub.PEPE_SLEEP.currentTime = 0;
+                AudioHub.PEPE_SLEEP.volume = 0.2;
+                AudioHub.PEPE_SLEEP.play();
+            }
+            return this.playAnimation(this.IMAGES_LONG_IDLE);
+        } else {
+            if (!AudioHub.PEPE_SLEEP.paused) {
+                AudioHub.PEPE_SLEEP.pause();
+                AudioHub.PEPE_SLEEP.currentTime = 0;
+            }
+        }
+        AudioHub.PEPE_SLEEP.pause();
         this.playAnimation(this.IMAGES_IDLE);
     }
 
@@ -180,6 +193,7 @@ class Character extends MoveableObject {
             this.showSarg();
         }, 500);
     }
+
     showEndscreen() {
         setTimeout(() => {
             const es = document.getElementById('endscreen');
@@ -187,6 +201,7 @@ class Character extends MoveableObject {
             if (this.world) this.world.paused = true;
         }, 800);
     }
+
     showSarg() {
         if (this.sargShown) return;
         this.sargShown = true;
@@ -203,7 +218,4 @@ class Character extends MoveableObject {
         AudioHub.LOOSER.volume = 0.3;
         AudioHub.LOOSER.play();
     }
-
-
-
 }
