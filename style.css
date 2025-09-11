@@ -111,7 +111,7 @@ body {
     position: absolute;
     top: 8px;
     right: 16px;
-    z-index: 20;
+    z-index: 5;
     display: flex;
     gap: 8px;
 }
@@ -249,7 +249,7 @@ body {
     max-width: 90vw;
     position: relative;
     max-width: 1440px;
-    max-height: 80vh;
+    max-height: 90vh;
     overflow-y: auto;
 
 }
@@ -343,6 +343,9 @@ canvas {
 #impressumModal,
 .ui {
     font-size: clamp(12px, 1.6vw, 18px);
+}
+.impressum {
+    margin-bottom: 20px;
 }
 
 /* Overlay für „Bitte drehen“ */
@@ -479,7 +482,7 @@ canvas {
     position: absolute;
     top: 8px;
     right: 15px;
-    z-index: 40;
+    z-index: 5;
     display: none;
     /* Standard: nur mobil sichtbar */
     padding: 10px 14px;

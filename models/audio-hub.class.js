@@ -24,6 +24,7 @@ class AudioHub {
     static BOTTLE_COLLECT = new Audio('./audio/bottle_collect.mp3');
     static PEPE_SLEEP = new Audio('./audio/pepe_sleep.mp3');
     static THROW = new Audio('./audio/throw.mp3');
+    static MUSIK_1 = new Audio('./audio/background_musik.mp3');
 
     /**
      * Array containing all audio elements for easy iteration.
@@ -49,7 +50,8 @@ class AudioHub {
         AudioHub.COIN_COLLECT,
         AudioHub.BOTTLE_COLLECT,
         AudioHub.PEPE_SLEEP,
-        AudioHub.THROW
+        AudioHub.THROW,
+        AudioHub.MUSIK_1
     ];
 
     /**

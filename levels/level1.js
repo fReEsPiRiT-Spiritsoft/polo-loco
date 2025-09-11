@@ -1,7 +1,7 @@
 
 let level1
 function initLevel1() {
-
+    playBackgroundMusik();
     level1 = new Level(
 
         [
@@ -33,7 +33,7 @@ function initLevel1() {
             new MiniChicken(),
             new Chicken(),
             new Chicken(),
-            new ChickenEndboss(),
+            new ChickenEndboss(world),
             new MiniChicken(),
             new MiniChicken(),
             new MiniChicken()
@@ -190,4 +190,11 @@ function initLevel1() {
             new CollectableBottle()
         ]
     );
+}
+
+function playBackgroundMusik() {
+    AudioHub.MUSIK_1.loop = true;
+    AudioHub.MUSIK_1.currentTime = 0;
+    AudioHub.MUSIK_1.volume = 0.25;
+    AudioHub.MUSIK_1.play();
 }
