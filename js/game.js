@@ -1,10 +1,13 @@
 let canvas;
 let world;
 let keyboard = new Keyboard();
-let lastThrowTime = 0;
+let inputManager;
 let selectedDifficulty = 'medium';
 let isMuted = false;
 
+/**
+ * init: Initializes the canvas and disables right-click context menu.
+ */
 function init() {
     canvas = document.getElementById('canvas');
     canvas.addEventListener('contextmenu', function (e) {
@@ -12,6 +15,9 @@ function init() {
     });
 }
 
+/**
+ * getDifficultySettings: Returns settings for the selected difficulty.
+ */
 function getDifficultySettings() {
     switch (selectedDifficulty) {
         case 'easy':
@@ -25,6 +31,9 @@ function getDifficultySettings() {
     }
 }
 
+/**
+ * startGame: Starts the game and sets up everything.
+ */
 function startGame() {
     const isMobile = isMobileDevice();
     const isPortrait = isPortraitMode();
@@ -36,18 +45,32 @@ function startGame() {
     showTouchControlsIfNeeded();
 }
 
+/**
+ * isMobileDevice: Checks if the user is on a mobile device.
+ */
 function isMobileDevice() {
     return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
 
+/**
+ * isPortraitMode: Checks if the device is in portrait mode.
+ */
 function isPortraitMode() {
     return window.matchMedia("(orientation: portrait)").matches;
 }
 
+/**
+ * setupLevel: Initializes the level and world with settings.
+ */
 function setupLevel(settings) {
     initLevel1(settings.darkClouds);
     world = new World(canvas, keyboard, level1);
     world.start();
+    if (!inputManager) {
+        inputManager = new InputManager(keyboard, world);
+    } else {
+        inputManager.setWorld(world); 
+    }
     const endboss = world.enemies.find(e => e instanceof ChickenEndboss);
     if (endboss) {
         endboss.energy = settings.endbossEnergy;
@@ -58,17 +81,26 @@ function setupLevel(settings) {
     }
 }
 
+/**
+ * hideStartScreen: Hides the start screen.
+ */
 function hideStartScreen() {
     const s = document.getElementById('startscreen');
     if (s) s.style.display = 'none';
 }
 
+/**
+ * handleFullscreen: Handles fullscreen mode for mobile/portrait.
+ */
 function handleFullscreen(isMobile, isPortrait) {
     if (isMobile && !isPortrait && !document.fullscreenElement) {
         toggleFullscreen();
     }
 }
 
+/**
+ * handleWeatherSounds: Plays weather sounds based on difficulty.
+ */
 function handleWeatherSounds() {
     if (selectedDifficulty === 'hard') {
         playWindyAudio();
@@ -77,6 +109,9 @@ function handleWeatherSounds() {
     }
 }
 
+/**
+ * playWindyAudio: Plays windy audio for hard mode.
+ */
 function playWindyAudio() {
     AudioHub.RAIN_HARD.loop = true;
     AudioHub.RAIN_HARD.currentTime = 0;
@@ -85,6 +120,9 @@ function playWindyAudio() {
     AudioHub.WINDY_HARD.currentTime = 0;
 }
 
+/**
+ * playRainyAudio: Plays rainy audio for other modes.
+ */
 function playRainyAudio() {
     AudioHub.WINDY_HARD.loop = true;
     AudioHub.WINDY_HARD.currentTime = 0;
@@ -93,11 +131,12 @@ function playRainyAudio() {
     AudioHub.RAIN_HARD.currentTime = 0;
 }
 
+/**
+ * toggleMute: Toggles mute for all sounds.
+ */
 function toggleMute() {
     isMuted = !isMuted;
     AudioHub.allSounds.forEach(sound => sound.muted = isMuted);
-
-    // Icon und Button-Style anpassen
     const muteIcon = document.getElementById('muteIcon');
     const btnMute = document.getElementById('btnMute');
     if (isMuted) {
@@ -107,6 +146,9 @@ function toggleMute() {
     }
 }
 
+/**
+ * showTouchControlsIfNeeded: Shows touch controls on touch devices.
+ */
 function showTouchControlsIfNeeded() {
     if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
         const t = document.getElementById('touchControls');
@@ -114,6 +156,9 @@ function showTouchControlsIfNeeded() {
     }
 }
 
+/**
+ * darkenClouds: Sets dark cloud images for the world.
+ */
 function darkenClouds(world) {
     const darkImgs = [
         'img/5_background/layers/4_clouds/1_dark.png',
@@ -126,27 +171,16 @@ function darkenClouds(world) {
     });
 }
 
+/**
+ * restartGame: Restarts the game and world.
+ */
 function restartGame() {
     destroyWorldIfExists();
     const settings = getDifficultySettings();
-    setupRestartLevel(settings);
-    updateEndbossAndWorld(settings);
-    cleanScreen();
-}
-
-function destroyWorldIfExists() {
-    if (world && typeof world.destroy === 'function') {
-        world.destroy();
-    }
-}
-
-function setupRestartLevel(settings) {
     initLevel1(settings.darkClouds);
     world = new World(canvas, keyboard, level1);
     world.start();
-}
-
-function updateEndbossAndWorld(settings) {
+    inputManager.setWorld(world); // neue World setzen
     const endboss = world.enemies.find(e => e instanceof ChickenEndboss);
     if (endboss) {
         endboss.energy = settings.endbossEnergy;
@@ -155,8 +189,21 @@ function updateEndbossAndWorld(settings) {
         if (settings.darkClouds) darkenClouds(world);
         if (settings.rain) world.enableRain = true;
     }
+    cleanScreen();
 }
 
+/**
+ * destroyWorldIfExists: Destroys the world if it exists.
+ */
+function destroyWorldIfExists() {
+    if (world && typeof world.destroy === 'function') {
+        world.destroy();
+    }
+}
+
+/**
+ * cleanScreen: Hides win and end screens.
+ */
 function cleanScreen() {
     const w = document.getElementById('winningscreen')
     const s = document.getElementById('endscreen');
@@ -165,10 +212,16 @@ function cleanScreen() {
 }
 
 
+/**
+ * goToMainMenu: Reloads the page to go to main menu.
+ */
 function goToMainMenu() {
     location.reload();
 }
 
+/**
+ * toggleFullscreen: Toggles fullscreen mode for the game.
+ */
 function toggleFullscreen() {
     const gameDiv = document.querySelector('.game');
     if (!document.fullscreenElement) {
@@ -178,6 +231,9 @@ function toggleFullscreen() {
     }
 }
 
+/**
+ * resizeCanvasToFullscreen: Resizes canvas for fullscreen mode.
+ */
 function resizeCanvasToFullscreen() {
     const gameDiv = document.querySelector('.game');
     if (document.fullscreenElement === gameDiv) {
@@ -220,6 +276,9 @@ function resizeCanvasToFullscreen() {
     }
 }
 
+/**
+ * updateRotateNotice: Updates the rotate notice for mobile/portrait.
+ */
 function updateRotateNotice() {
     const el = document.getElementById('rotateNotice');
     if (!el) return;
@@ -228,15 +287,49 @@ function updateRotateNotice() {
     el.style.display = (isMobile && isPortrait) ? 'flex' : '';
 }
 
+/**
+ * toggleMenu: Toggles the UI menu open/close.
+ */
 function toggleMenu() {
     const ui = document.getElementById('ui');
     if (!ui) return;
     ui.classList.toggle('open');
 }
 
+/**
+ * focusCanvas: Focuses the canvas element.
+ */
 function focusCanvas() {
     const c = document.getElementById('canvas');
     if (c) c.focus();
+}
+
+/**
+ * openControlsModal: Opens the controls modal.
+ */
+function openControlsModal() {
+    document.getElementById('controlsModal').classList.remove('hidden');
+}
+
+/**
+ * closeControlsModal: Closes the controls modal.
+ */
+function closeControlsModal() {
+    document.getElementById('controlsModal').classList.add('hidden');
+}
+
+/**
+ * openImpressumModal: Opens the impressum modal.
+ */
+function openImpressumModal() {
+    document.getElementById('impressumModal').classList.remove('hidden');
+}
+
+/**
+ * closeImpressumModal: Closes the impressum modal.
+ */
+function closeImpressumModal() {
+    document.getElementById('impressumModal').classList.add('hidden');
 }
 
 document.addEventListener('click', e => {
@@ -257,115 +350,12 @@ window.addEventListener('keydown', e => {
     }
 });
 
-// Nach Spielstart Canvas fokussieren
+
 const _origStartGame = startGame;
 startGame = function () {
     _origStartGame();
     focusCanvas();
 };
-
-function setupTouchControls() {
-    bindTouchButton('btnLeft', 'LEFT');
-    bindTouchButton('btnRight', 'RIGHT');
-    bindTouchButton('btnJump', 'SPACE');
-    bindTouchButton('btnThrow', 'D');
-}
-
-function bindTouchButton(elementId, key) {
-    const btn = document.getElementById(elementId);
-    if (!btn) return;
-    btn.addEventListener('touchstart', e => handleTouchStart(e, key));
-    btn.addEventListener('touchend', e => handleTouchEnd(e, key));
-    btn.addEventListener('touchcancel', e => handleTouchEnd(e, key));
-}
-
-function handleTouchStart(e, key) {
-    e.preventDefault();
-    keyboard[key] = true;
-    if (key === 'D') handleThrowOnTouch();
-}
-
-function handleTouchEnd(e, key) {
-    e.preventDefault();
-    keyboard[key] = false;
-}
-
-function handleThrowOnTouch() {
-    const now = performance.now();
-    if (now - lastThrowTime > 750) {
-        if (world) world.checkThrowObjects();
-        lastThrowTime = now;
-    }
-}
-
-document.addEventListener('DOMContentLoaded', setupTouchControls);
-document.addEventListener('fullscreenchange', resizeCanvasToFullscreen);
-document.addEventListener('fullscreenchange', resizeCanvasToFullscreen);
-window.addEventListener('resize', resizeCanvasToFullscreen);
-
-window.addEventListener('keydown', (event) => {
-    // console.log(event.keyCode)
-    if (event.keyCode == 39) {
-        keyboard.RIGHT = true;
-    }
-    if (event.keyCode == 37) {
-        keyboard.LEFT = true;
-    }
-    if (event.keyCode == 38) {
-        keyboard.UP = true;
-    }
-    if (event.keyCode == 40) {
-        keyboard.DOWN = true;
-    }
-    if (event.keyCode == 32) {
-        keyboard.SPACE = true;
-    }
-    if (event.keyCode == 68) {
-        const now = performance.now();
-        if (now - lastThrowTime > 750) {
-            keyboard.D = true;
-            if (world) {
-                world.checkThrowObjects();
-            }
-            lastThrowTime = now;
-        }
-    }
-    if (event.keyCode == 72) {
-        world.debugHitboxes = !world.debugHitboxes;
-    }
-});
-
-window.addEventListener('keyup', (event) => {
-    if (event.keyCode == 39) {
-        keyboard.RIGHT = false;
-    }
-    if (event.keyCode == 37) {
-        keyboard.LEFT = false;
-    }
-    if (event.keyCode == 38) {
-        keyboard.UP = false;
-    }
-    if (event.keyCode == 40) {
-        keyboard.DOWN = false;
-    }
-    if (event.keyCode == 32) {
-        keyboard.SPACE = false;
-    }
-    if (event.keyCode == 68) {
-        keyboard.D = false;
-    }
-
-});
-
-document.addEventListener('click', (e) => {
-    const ui = document.getElementById('ui');
-    const toggle = document.getElementById('menuToggle');
-    if (!ui || !toggle) return;
-    if (window.innerWidth > 900) return;
-    if (!ui.contains(e.target) && e.target !== toggle) {
-        ui.classList.remove('open');
-    }
-});
 
 window.addEventListener('orientationchange', updateRotateNotice);
 window.addEventListener('resize', updateRotateNotice);
@@ -374,25 +364,3 @@ document.addEventListener('DOMContentLoaded', updateRotateNotice);
 document.getElementById('difficulty').addEventListener('change', function (e) {
     selectedDifficulty = e.target.value;
 });
-
-function openControlsModal() {
-    document.getElementById('controlsModal').classList.remove('hidden');
-}
-function closeControlsModal() {
-    document.getElementById('controlsModal').classList.add('hidden');
-}
-
-window.addEventListener('keydown', function (e) {
-    if (e.key === "Escape") closeControlsModal();
-});
-
-window.addEventListener('keydown', function (e) {
-    if (e.key === "Escape") closeImpressumModal();
-});
-
-function openImpressumModal() {
-    document.getElementById('impressumModal').classList.remove('hidden');
-}
-function closeImpressumModal() {
-    document.getElementById('impressumModal').classList.add('hidden');
-}
