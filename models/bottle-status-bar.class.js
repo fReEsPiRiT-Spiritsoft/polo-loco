@@ -53,8 +53,15 @@ class BottleStatusBar extends DrawableObject {
         if (this.percentage > 60 && this.percentage <= 80) return 4;
         if (this.percentage > 80) return 5;
     }
+
+    /**
+     * Draws the bottle status bar and, if at least one bottle is collected,
+     * displays the number of collected bottles in red text on top of the bar.
+     * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+     * @param {number} [collectedBottles=0] - The current number of collected bottles.
+     */
     draw(ctx, collectedBottles = 0) {
-        super.draw(ctx); // Draws the status bar
+        super.draw(ctx); 
         if (collectedBottles > 0) {
             ctx.save();
             ctx.font = "bold 28px Arial";
@@ -67,6 +74,5 @@ class BottleStatusBar extends DrawableObject {
             );
             ctx.restore();
         }
-
     }
 }

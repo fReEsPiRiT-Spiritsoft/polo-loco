@@ -1,11 +1,16 @@
+/**
+ * cloud: Represents a moving cloud in the background, with optional dark mode.
+ */
 class cloud extends MoveableObject {
     y = 8
     width = 500;
     height = 500;
     speed = 0.2;
-
-
-
+ 
+    /**
+     * Constructor for the cloud class. Initializes the cloud image, position, and animation.
+     * @param {boolean} [isDark=false] - Whether the cloud should use a dark image.
+     */
     constructor(isDark = false) {
         const images = isDark
             ? [
@@ -22,6 +27,10 @@ class cloud extends MoveableObject {
         this.animate();
         this.isDark = isDark;
     }
+
+    /**
+     * animate: Starts the movement animation for the cloud (moves left continuously).
+     */
     animate() {
         setInterval(() => {
             this.moveLeft();

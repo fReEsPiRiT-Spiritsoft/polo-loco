@@ -1,3 +1,6 @@
+/**
+ * Keyboard: Tracks the current state of keyboard controls for the player.
+ */
 class Keyboard{
     LEFT = false;
     RIGHT = false;

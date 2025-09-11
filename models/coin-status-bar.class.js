@@ -1,7 +1,15 @@
+/**
+ * CoinStatusBar: Displays the coin status bar in the game UI, showing the number of collected coins.
+ * Inherits from DrawableObject.
+ */
 class CoinStatusBar extends DrawableObject {
 
     percentage = 0;
 
+    /**
+     * Array of image paths for different coin status levels.
+     * @type {string[]}
+     */
     IMAGES = [
         'img/7_statusbars/1_statusbar/1_statusbar_coin/orange/0.png',
         'img/7_statusbars/1_statusbar/1_statusbar_coin/orange/20.png',
@@ -11,6 +19,9 @@ class CoinStatusBar extends DrawableObject {
         'img/7_statusbars/1_statusbar/1_statusbar_coin/orange/100.png'
     ];
 
+    /**
+     * Constructor for CoinStatusBar. Initializes position, size, and loads images.
+     */
     constructor() {
         super();
         this.loadImages(this.IMAGES)
@@ -21,13 +32,20 @@ class CoinStatusBar extends DrawableObject {
         this.height = 50
     }
 
-
+    /**
+     * Sets the percentage value for the coin status bar and updates the displayed image.
+     * @param {number} percentage - The percentage of coins collected (0-100).
+     */
     setPercentage(percentage) {
         this.percentage = percentage;
         let path = this.IMAGES[this.resolveImageIndex()]
         this.img = this.imageCache[path];
     }
 
+    /**
+     * Resolves the image index based on the current percentage.
+     * @returns {number} The index of the image to display.
+     */
     resolveImageIndex() {
         if (this.percentage >= 100) return 5;
         if (this.percentage > 80) return 4;

@@ -1,3 +1,6 @@
+/**
+ * Chicken: Represents a normal chicken enemy that moves left and can be killed.
+ */
 class Chicken extends MoveableObject {
 
     y = 350;
@@ -28,6 +31,9 @@ class Chicken extends MoveableObject {
         this.animateWalk();
     }
 
+     /**
+     * animate: Moves the chicken left and plays the dead animation if energy is 0.
+     */
     animate() {
         setInterval(() => {
             this.moveLeft();
@@ -37,12 +43,19 @@ class Chicken extends MoveableObject {
         }, 1000 / 60);
 
     }
+
+    /**
+     * animateWalk: Plays the walking animation for the chicken.
+     */
     animateWalk() {
         this.walkInterval = setInterval(() => {
             this.playAnimation(this.IMAGES_WALKING);
         }, 150);
     }
 
+    /**
+     * animateDeath: Stops the walking animation and plays the dead animation.
+     */
     animateDeath() {
         clearInterval(this.walkInterval);
         this.playAnimation(this.IMAGES_DEAD);

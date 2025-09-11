@@ -6,6 +6,8 @@ class ShiftCamera {
     camTransitionStart = 0;
     camTransitionFrom = 0;
     camTransitionTo = 0;
+    camera_x = 0; // <--- hinzugefügt
+
     CAM_TRANSITION_DURATION = 450; // ms
     CAM_LEFT_OFFSET = 100; // dein Standard links
     CAM_RIGHT_OFFSET_EXTRA = 100; // der -100 Teil aus deiner rechten Formel
@@ -21,6 +23,21 @@ class ShiftCamera {
     BOSS_SHIFT_DEACTIVATE_DELTA = 20; // Boss kommt wieder näher / rechts -> deaktivieren
     BOSS_SHIFT_MIN_HOLD = 500;
 
+    constructor(world) {
+        this.world = world; // Zugriff auf character, enemies, canvas
+    }
+
+    get character() {
+        return this.world.character;
+    }
+
+    get enemies() {
+        return this.world.enemies;
+    }
+
+    get canvas() {
+        return this.world.canvas;
+    }
 
     updateCamera() {
         this.evaluateBossCamera();

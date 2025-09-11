@@ -1,3 +1,7 @@
+/**
+ * MiniChicken: Represents a small chicken enemy that moves left and can be killed.
+ * Inherits from MoveableObject.
+ */
 class MiniChicken extends MoveableObject {
 
     y = 350;
@@ -5,8 +9,10 @@ class MiniChicken extends MoveableObject {
     width = 50;
     speed = 0.15 + Math.random() * 0.45;
 
-
-
+    /**
+     * Array of image paths for the walking animation.
+     * @type {string[]}
+     */
     IMAGES_WALKING = [
         'img/3_enemies_chicken/chicken_small/1_walk/1_w.png',
         'img/3_enemies_chicken/chicken_small/1_walk/2_w.png',
@@ -14,6 +20,10 @@ class MiniChicken extends MoveableObject {
 
     ];
 
+    /**
+     * Array of image paths for the dead animation.
+     * @type {string[]}
+     */
     IMAGES_DEAD = [
         // 'img/3_enemies_chicken/chicken_small/2_dead/dead.png',
         'img/3_enemies_chicken/chicken_small/2_dead/boom.png',
@@ -35,6 +45,10 @@ class MiniChicken extends MoveableObject {
         'img/3_enemies_chicken/chicken_small/2_dead/boom.png'
     ];
 
+    /**
+     * Constructor for MiniChicken.
+     * Initializes position, size, speed, and loads images.
+     */
     constructor() {
         super().loadImage('img/3_enemies_chicken/chicken_normal/1_walk/1_w.png')
         this.x = 400 + Math.random() * (9200 - 400);
@@ -46,6 +60,9 @@ class MiniChicken extends MoveableObject {
         this.animateWalk();
     }
 
+    /**
+     * animate: Moves the mini chicken left and plays the dead animation if energy is 0.
+     */
     animate() {
         setInterval(() => {
             this.moveLeft();
@@ -55,12 +72,19 @@ class MiniChicken extends MoveableObject {
         }, 1000 / 60);
 
     }
+
+    /**
+     * animateWalk: Plays the walking animation for the mini chicken.
+     */
     animateWalk() {
         this.walkInterval = setInterval(() => {
             this.playAnimation(this.IMAGES_WALKING);
         }, 150);
     }
 
+    /**
+     * animateDeath: Stops the walking animation and plays the dead animation.
+     */
     animateDeath() {
         clearInterval(this.walkInterval);
         this.playAnimation(this.IMAGES_DEAD);

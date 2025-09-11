@@ -1,3 +1,6 @@
+/**
+ * Character: Main player character class with movement, animation, and sound logic.
+ */
 class Character extends MoveableObject {
 
     height = 300;
@@ -96,23 +99,39 @@ class Character extends MoveableObject {
         };
     }
 
+    /**
+     * markAction: Updates the last action timestamp for idle detection.
+     */
     markAction() {
         this.lastAction = performance.now();
     }
 
+    /**
+     * isLongIdle: Checks if the character has been idle long enough for long idle animation.
+     * @returns {boolean}
+     */
     isLongIdle() {
         return (performance.now() - this.lastAction) >= this.longIdleDelay;
     }
 
+    /**
+     * animate: Starts movement and animation loops for the character.
+     */
     animate() {
         this.startMovementLoop();
         this.startAnimationLoop();
     }
 
+    /**
+     * startMovementLoop: Starts the interval for movement updates.
+     */
     startMovementLoop() {
         this.moveInterval = setInterval(() => this.updateMovement(), 1000 / 60);
     }
 
+    /**
+     * updateMovement: Handles character movement, sounds, and camera position.
+     */
     updateMovement() {
         if (!this.isEndbossAlive()) return this.handleEndbossDead();
         let moved = this.handleMovement();
@@ -121,11 +140,18 @@ class Character extends MoveableObject {
         this.world.camera_x = -this.x + 100;
     }
 
+    /**
+     * handleEndbossDead: Stops animations and walking sound when endboss is dead.
+     */
     handleEndbossDead() {
         if (this.animations) clearInterval(this.animations);
         AudioHub.PEPE_WALK.pause();
     }
 
+    /**
+     * handleMovement: Handles left/right movement and jumping, returns if moved.
+     * @returns {boolean}
+     */
     handleMovement() {
         let moved = false;
         if (this.canMoveRight()) {
@@ -148,6 +174,10 @@ class Character extends MoveableObject {
         return moved;
     }
 
+    /**
+     * handleWalkSound: Plays or pauses the walking sound based on movement.
+     * @param {boolean} moved
+     */
     handleWalkSound(moved) {
         if (moved) {
             if (AudioHub.PEPE_WALK.paused) {
@@ -163,6 +193,9 @@ class Character extends MoveableObject {
         }
     }
 
+    /**
+     * handleLandingSound: Plays landing sound when character lands on the ground.
+     */
     handleLandingSound() {
         if (this.wasAboveGround && !this.isAboveGround()) {
             AudioHub.PEPE_LAND.currentTime = 0;
@@ -171,26 +204,48 @@ class Character extends MoveableObject {
         this.wasAboveGround = this.isAboveGround();
     }
 
+    /**
+     * isEndbossAlive: Checks if the endboss is still alive.
+     * @returns {boolean}
+     */
     isEndbossAlive() {
         return this.world?.enemies?.some(e => e instanceof ChickenEndboss && !e.isDead) ?? true;
     }
 
+    /**
+     * canMoveRight: Checks if the character can move right.
+     * @returns {boolean}
+     */
     canMoveRight() {
         return this.world.keyboard.RIGHT && this.x < 7200 && !this.isDead() && !this.characterKnockbackActive;
     }
 
+    /**
+     * canMoveLeft: Checks if the character can move left.
+     * @returns {boolean}
+     */
     canMoveLeft() {
         return this.world.keyboard.LEFT && this.x > 0 && !this.isDead() && !this.characterKnockbackActive;
     }
 
+    /**
+     * canJump: Checks if the character can jump.
+     * @returns {boolean}
+     */
     canJump() {
         return this.world.keyboard.SPACE && !this.isAboveGround() && !this.isDead();
     }
 
+    /**
+     * startAnimationLoop: Starts the interval for animation frame updates.
+     */
     startAnimationLoop() {
         this.animations = setInterval(() => this.updateAnimationFrame(), 100);
     }
 
+    /**
+     * updateAnimationFrame: Updates the character's animation frame based on state.
+     */
     updateAnimationFrame() {
         if (this.isHurt()) return this.playAnimation(this.IMAGES_HURT);
         if (this.isDead()) return this.playDeathSequence();
@@ -200,10 +255,17 @@ class Character extends MoveableObject {
         this.handleIdle();
     }
 
+    /**
+     * isWalking: Checks if the character is currently walking.
+     * @returns {boolean}
+     */
     isWalking() {
         return this.world.keyboard.RIGHT || this.world.keyboard.LEFT;
     }
 
+    /**
+     * handleLongIdle: Plays long idle animation and sleep sound.
+     */
     handleLongIdle() {
         if (AudioHub.PEPE_SLEEP.paused) {
             AudioHub.PEPE_SLEEP.currentTime = 0;
@@ -213,6 +275,9 @@ class Character extends MoveableObject {
         return this.playAnimation(this.IMAGES_LONG_IDLE);
     }
 
+    /**
+     * handleIdle: Plays idle animation and stops sleep sound.
+     */
     handleIdle() {
         if (!AudioHub.PEPE_SLEEP.paused) {
             AudioHub.PEPE_SLEEP.pause();
@@ -222,6 +287,9 @@ class Character extends MoveableObject {
         this.playAnimation(this.IMAGES_IDLE);
     }
 
+    /**
+     * playDeathSequence: Plays death animation and shows coffin after delay.
+     */
     playDeathSequence() {
         this.playAnimation(this.IMAGES_DEAD);
         setTimeout(() => {
@@ -230,6 +298,9 @@ class Character extends MoveableObject {
         }, 500);
     }
 
+    /**
+     * showEndscreen: Displays the end screen and pauses the world.
+     */
     showEndscreen() {
         setTimeout(() => {
             const es = document.getElementById('endscreen');
@@ -238,6 +309,9 @@ class Character extends MoveableObject {
         }, 800);
     }
 
+    /**
+     * showSarg: Shows the coffin image and triggers end screen and lose sound.
+     */
     showSarg() {
         if (this.sargShown) return;
         this.sargShown = true;
@@ -252,6 +326,9 @@ class Character extends MoveableObject {
         this.playLoseSound();
     }
 
+    /**
+     * playLoseSound: Plays the lose sound effect.
+     */
     playLoseSound() {
         AudioHub.LOOSER.currentTime = 0;
         AudioHub.LOOSER.volume = 0.3;

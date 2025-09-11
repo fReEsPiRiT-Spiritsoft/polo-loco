@@ -1,4 +1,6 @@
-
+/**
+ * initLevel1: Initializes level 1 with all enemies, clouds, backgrounds, and collectables.
+ */
 let level1
 function initLevel1() {
     playBackgroundMusik();
@@ -192,6 +194,9 @@ function initLevel1() {
     );
 }
 
+/**
+ * playBackgroundMusik: Starts and loops the background music for the level.
+ */
 function playBackgroundMusik() {
     AudioHub.MUSIK_1.loop = true;
     AudioHub.MUSIK_1.currentTime = 0;

@@ -306,33 +306,12 @@ class ChickenEndboss extends MoveableObject {
         this.isHurt = true;
         this.hurtUntil = performance.now() + 400;
         this.currentImage = 0;
-
-        // NEU: Chickens nachspawnen bei <30% Energie
-        if (!this.spawnedReinforcements && this.energy / this.maxEnergy <= 0.3) {
-            this.spawnedReinforcements = true;
-            this.spawnReinforcements();
-        }
-
         if (this.energy <= 0) {
             this.death();
         }
     }
 
-    spawnReinforcements() {
-        // Passe die Anzahl nach Wunsch an!
-        for (let i = 0; i < 3; i++) {
-            const chicken = new Chicken();
-            chicken.x = this.x + this.width / 2 - chicken.width / 2; // Mitte des Endbosses
-            chicken.y = this.y + this.height / 2 - chicken.height / 2;
-            this.world.enemies.push(chicken);
-        }
-        for (let i = 0; i < 2; i++) {
-            const miniChicken = new MiniChicken();
-            miniChicken.x = this.x + this.width / 2 - miniChicken.width / 2;
-            miniChicken.y = this.y + this.height / 2 - miniChicken.height / 2;
-            this.world.enemies.push(miniChicken);
-        }
-    }
+    
 
     death() {
         if (this.isDead) return;
