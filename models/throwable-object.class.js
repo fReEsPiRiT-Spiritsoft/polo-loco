@@ -104,7 +104,7 @@ class ThrowableObject extends MoveableObject {
      * Plays the splash sound effect.
      */
     splashSound(){
-        AudioHub.BOTTLE_SPLASH.volume = 0.3;
+        AudioHub.BOTTLE_SPLASH.volume = 0.15;
         AudioHub.BOTTLE_SPLASH.currentTime = 0;
         AudioHub.BOTTLE_SPLASH.play();
     }

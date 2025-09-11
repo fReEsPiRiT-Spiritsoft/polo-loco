@@ -247,6 +247,11 @@ class Character extends MoveableObject {
      * updateAnimationFrame: Updates the character's animation frame based on state.
      */
     updateAnimationFrame() {
+        if (!this.isLongIdle() && !AudioHub.PEPE_SLEEP.paused) {
+            AudioHub.PEPE_SLEEP.pause();
+            AudioHub.PEPE_SLEEP.currentTime = 0;
+        }
+
         if (this.isHurt()) return this.playAnimation(this.IMAGES_HURT);
         if (this.isDead()) return this.playDeathSequence();
         if (this.isAboveGround()) return this.playAnimation(this.IMAGES_JUMPING);
