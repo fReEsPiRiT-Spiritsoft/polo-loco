@@ -63,13 +63,14 @@ function isPortraitMode() {
  * setupLevel: Initializes the level and world with settings.
  */
 function setupLevel(settings) {
+    world = null;
     initLevel1(settings.darkClouds);
     world = new World(canvas, keyboard, level1);
     world.start();
     if (!inputManager) {
         inputManager = new InputManager(keyboard, world);
     } else {
-        inputManager.setWorld(world); 
+        inputManager.setWorld(world);
     }
     const endboss = world.enemies.find(e => e instanceof ChickenEndboss);
     if (endboss) {
@@ -176,6 +177,7 @@ function darkenClouds(world) {
  */
 function restartGame() {
     destroyWorldIfExists();
+    world = null;
     const settings = getDifficultySettings();
     initLevel1(settings.darkClouds);
     world = new World(canvas, keyboard, level1);
@@ -196,6 +198,15 @@ function restartGame() {
  * destroyWorldIfExists: Destroys the world if it exists.
  */
 function destroyWorldIfExists() {
+    if (world && world.enemies) {
+        world.enemies.forEach(enemy => {
+            if (enemy !== this && enemy.energy > 0) {
+                enemy.energy = 0;
+                enemy.markedForRemoval = true;
+                enemy.animateDeath && enemy.animateDeath();
+            }
+        });
+    }
     if (world && typeof world.destroy === 'function') {
         world.destroy();
     }
