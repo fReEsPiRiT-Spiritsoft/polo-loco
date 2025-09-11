@@ -7,14 +7,12 @@ class ChickenEndboss extends MoveableObject {
     baseSpeed = 9;
     speed = 9;
 
-
     alerted = false;
     isJumping = false;
     isAttacking = false;
     isDead = false;
     isHurt = false;
     energy = 100;
-
 
     alertStartedAt = 0;
     nextJumpAt = 0;
@@ -25,14 +23,12 @@ class ChickenEndboss extends MoveableObject {
     JUMP_DISTANCE_MIN = 220;
     JUMP_DISTANCE_MAX = 1200;
 
-    // NEU: Dash-Konfiguration
-    DASH_DISTANCE_MAX = 800;          // bis zu welcher Distanz ein Dash gestartet werden darf
-    DASH_MIN_DISTANCE = 180;          // nicht dashen wenn schon direkt dran (normale Attacke übernimmt)
-    DASH_COOLDOWN = 4000;             // ms
-    DASH_DURATION = 620;              // ms aktive Dash-Phase
-    DASH_SPEED = 42;                  // horizontale Geschwindigkeit während Dash
+    DASH_DISTANCE_MAX = 800;         
+    DASH_MIN_DISTANCE = 180;          
+    DASH_COOLDOWN = 4000;             
+    DASH_DURATION = 620;            
+    DASH_SPEED = 42;                 
     DASH_TRIGGER_CHANCE = 0.6;
-
 
     ALERT_DURATION = 600;
     JUMP_COOLDOWN = 1800;
@@ -41,12 +37,10 @@ class ChickenEndboss extends MoveableObject {
     JUMP_DISTANCE_MIN = 220;
     JUMP_DISTANCE_MAX = 1200;
 
-    // Jump-Physik
     jumpVy = 0;
     jumpStartVy = 24;
     gravity = 1.2;
 
-    // Animation-Sets
     IMAGES_WALKING = [
         'img/4_enemie_boss_chicken/1_walk/g1.png',
         'img/4_enemie_boss_chicken/1_walk/g2.png',
@@ -84,8 +78,11 @@ class ChickenEndboss extends MoveableObject {
         'img/4_enemie_boss_chicken/5_dead/g26.png'
     ];
 
+    /**
+     * Constructor: Initializes the endboss.
+     * @param {World} world - The game world instance.
+     */
     constructor(world) {
-
         super().loadImage('img/4_enemie_boss_chicken/2_alert/g11.png');
         this.world = world;
         this.x = 6400;
@@ -106,19 +103,28 @@ class ChickenEndboss extends MoveableObject {
             width: 200,
             height: 200
         };
-        this.spawnedReinforcements = false; // <--- NEU
+        this.spawnedReinforcements = false;
     }
 
+    /**
+     * startLoop: Starts AI and animation intervals.
+     */
     startLoop() {
         this.aiInterval = setInterval(() => this.update(), 100);
         this.animInterval = setInterval(() => this.tickAnimation(), 140);
     }
 
+    /**
+     * updateStatusBar: Updates the endboss status bar.
+     */
     updateStatusBar() {
         let percent = Math.max(0, Math.round((this.energy / this.maxEnergy) * 100));
         this.statusBar.setPercentage(percent);
     }
 
+    /**
+     * update: Main AI update logic.
+     */
     update() {
         if (this.isDead) return;
         if (!world?.character) return;
@@ -138,36 +144,58 @@ class ChickenEndboss extends MoveableObject {
         if (!this.isJumping && !this.isAttacking) this.chase(dist);
     }
 
+    /**
+     * updateHurt: Handles hurt state.
+     * @param {number} now - Current timestamp.
+     */
     updateHurt(now) {
         if (now >= this.hurtUntil) this.isHurt = false;
         this.updateJumpPhysics();
         this.updateDashPhysics();
     }
 
+    /**
+     * checkAlert: Checks if boss should become alerted.
+     * @param {number} absDist - Absolute distance to player.
+     * @param {number} now - Current timestamp.
+     */
     checkAlert(absDist, now) {
         if (this.shouldAlert(absDist)) this.startAlert(now);
     }
 
+    /**
+     * tickAnimation: Updates the animation frame.
+     */
     tickAnimation() {
         if (this.isDead) { this.playAnimation(this.IMAGES_DEAD); return; }
         if (!this.alerted) { this.playAnimation(this.IMAGES_ALERT); return; }
         if (this.isHurt) { this.playAnimation(this.IMAGES_HURT); return; }
         if (this.isDashing) {
-            // Optional: eigenes Dash-Set -> this.playAnimation(this.IMAGES_DASH);
             this.playAnimation(this.IMAGES_ATTACK);
             return;
         }
         if (this.isAttacking) { this.playAnimation(this.IMAGES_ATTACK); return; }
-        if (this.isJumping) { this.playAnimation(this.IMAGES_HURT); return; } // Platzhalter für Jump-Frames
+        if (this.isJumping) { this.playAnimation(this.IMAGES_HURT); return; } 
         this.playAnimation(this.IMAGES_WALKING);
     }
 
+    /**
+     * shouldAlert: Returns true if boss should alert.
+     * @param {number} absDist - Absolute distance to player.
+     * @returns {boolean}
+     */
     shouldAlert(absDist) {
         const cameraLeft = -world.camera_x;
         const cameraRight = cameraLeft + world.canvas.width;
         return (this.x >= cameraLeft && this.x <= cameraRight) || absDist < 850;
     }
 
+    /**
+     * canAttack: Checks if boss can attack.
+     * @param {number} now - Current timestamp.
+     * @param {number} absDist - Absolute distance to player.
+     * @returns {boolean}
+     */
     canAttack(now, absDist) {
         return !this.isJumping &&
             !this.isAttacking &&
@@ -175,6 +203,12 @@ class ChickenEndboss extends MoveableObject {
             now >= this.nextAttackAt;
     }
 
+    /**
+     * canJump: Checks if boss can jump.
+     * @param {number} now - Current timestamp.
+     * @param {number} absDist - Absolute distance to player.
+     * @returns {boolean}
+     */
     canJump(now, absDist) {
         return !this.isJumping &&
             !this.isAttacking &&
@@ -184,13 +218,20 @@ class ChickenEndboss extends MoveableObject {
             this.onGround();
     }
 
-    // ---- Aktionen ----
+    /**
+     * startAlert: Starts alert state.
+     * @param {number} now - Current timestamp.
+     */
     startAlert(now) {
         this.alerted = true;
         this.alertStartedAt = now;
         this.currentImage = 0;
     }
 
+    /**
+     * startAttack: Starts attack state.
+     * @param {number} now - Current timestamp.
+     */
     startAttack(now) {
         this.isAttacking = true;
         this.currentImage = 0;
@@ -204,6 +245,10 @@ class ChickenEndboss extends MoveableObject {
         }, 750);
     }
 
+    /**
+     * attackHit: Handles attack hit logic.
+     * @param {number} now - Current timestamp.
+     */
     attackHit(now) {
         setTimeout(() => {
             if (!this.isDead && Math.abs(this.x - world.character.x) <= this.ATTACK_DISTANCE + 20) {
@@ -213,6 +258,11 @@ class ChickenEndboss extends MoveableObject {
         }, 300);
     }
 
+    /**
+     * startJump: Starts jump state.
+     * @param {number} now - Current timestamp.
+     * @param {number} dist - Distance to player.
+     */
     startJump(now, dist) {
         this.isJumping = true;
         this.currentImage = 0;
@@ -221,6 +271,10 @@ class ChickenEndboss extends MoveableObject {
         this.horizontalPush = dist > 0 ? -6 : 6;
     }
 
+    /**
+     * chase: Moves boss towards player.
+     * @param {number} dist - Distance to player.
+     */
     chase(dist) {
         const dirLeft = dist > 0;
         if (dirLeft) this.moveLeft();
@@ -229,7 +283,9 @@ class ChickenEndboss extends MoveableObject {
         this.x = Math.max(0, this.x);
     }
 
-    // ---- Physik Jump ----
+    /**
+     * updateJumpPhysics: Updates jump movement.
+     */
     updateJumpPhysics() {
         if (!this.isJumping) return;
         this.x += this.horizontalPush;
@@ -238,53 +294,70 @@ class ChickenEndboss extends MoveableObject {
         if (this.y >= this.groundY) this.land();
     }
 
+    /**
+     * land: Handles landing after jump.
+     */
     land() {
         this.y = this.groundY;
         this.jumpVy = 0;
         this.isJumping = false;
     }
 
+    /**
+     * onGround: Checks if boss is on the ground.
+     * @returns {boolean}
+     */
     onGround() {
         return !this.isJumping && this.y >= this.groundY;
     }
 
-
+    /**
+     * canDash: Checks if boss can dash.
+     * @param {number} now - Current timestamp.
+     * @param {number} absDist - Absolute distance to player.
+     * @returns {boolean}
+     */
     canDash(now, absDist) {
         if (this.isAttacking) return false;
-        // Sprung NICHT mehr ausschließen, damit Luft-Dash möglich ist
         if (now - this.lastDashAt < this.DASH_COOLDOWN) return false;
         if (absDist > this.DASH_DISTANCE_MAX) return false;
         if (absDist < this.DASH_MIN_DISTANCE) return false;
         return Math.random() < this.DASH_TRIGGER_CHANCE;
     }
 
+    /**
+     * startDash: Starts dash state.
+     * @param {number} now - Current timestamp.
+     * @param {number} dist - Distance to player.
+     */
     startDash(now, dist) {
         this.isDashing = true;
         this.lastDashAt = now;
         this.currentImage = 0;
         this.dashDir = dist > 0 ? -1 : 1;
         this.dashEndsAt = now + this.DASH_DURATION;
-        // Sprungstatus bleibt bestehen (kein this.isJumping = false)
         if (Math.abs(dist) < this.ATTACK_DISTANCE + 30) {
             world.character.hit();
             world.statusBar.setPercentage(world.character.energy);
         }
     }
 
+    /**
+     * updateDashPhysics: Updates dash movement.
+     */
     updateDashPhysics() {
         if (!this.isDashing) return;
         const now = performance.now();
-        // Bewegung
         this.x += this.dashDir * this.DASH_SPEED;
-
-        // Kollisions-Schaden während Dash (einmal pro Tick möglich)
         this.dashCollision();
-
         if (now >= this.dashEndsAt) {
             this.isDashing = false;
         }
     }
 
+    /**
+     * dashCollision: Handles dash collision with player.
+     */
     dashCollision() {
         if (Math.abs(this.x - world.character.x) <= this.ATTACK_DISTANCE) {
             world.character.hit();
@@ -292,6 +365,10 @@ class ChickenEndboss extends MoveableObject {
         }
     }
 
+    /**
+     * updateFacing: Updates boss facing direction.
+     * @param {number} dist - Distance to player.
+     */
     updateFacing(dist) {
         this.otherDirection = dist < 0;
         if (this.world) {
@@ -299,6 +376,9 @@ class ChickenEndboss extends MoveableObject {
         }
     }
 
+    /**
+     * takeBottleHit: Handles being hit by a bottle.
+     */
     takeBottleHit() {
         if (this.isDead) return;
         this.energy -= 10;
@@ -311,8 +391,9 @@ class ChickenEndboss extends MoveableObject {
         }
     }
 
-    
-
+    /**
+     * death: Handles boss death.
+     */
     death() {
         if (this.isDead) return;
         this.isDead = true;
@@ -325,6 +406,9 @@ class ChickenEndboss extends MoveableObject {
         setTimeout(() => this.finishDeath(), 2000);
     }
 
+    /**
+     * playDeathAnimation: Plays death animation.
+     */
     playDeathAnimation() {
         let i = 0;
         const deadAnim = setInterval(() => {
@@ -334,6 +418,9 @@ class ChickenEndboss extends MoveableObject {
         }, 180);
     }
 
+    /**
+     * finishDeath: Finalizes death and triggers win.
+     */
     finishDeath() {
         if (world && world.enemies) {
             world.enemies.forEach(enemy => {
