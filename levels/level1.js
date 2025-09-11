@@ -96,10 +96,10 @@ function initLevel1() {
         ],
 
         [
-            new BackgroundObject('img/5_background/layers/air.png', -720, 0.7),
-            new BackgroundObject('img/5_background/layers/3_third_layer/2.png', -720, 0.8),
-            new BackgroundObject('img/5_background/layers/2_second_layer/2.png', -720, 0.9),
-            new BackgroundObject('img/5_background/layers/1_first_layer/2.png', -720, 1),
+            new BackgroundObject('img/5_background/layers/air.png', -721, 1),         
+            new BackgroundObject('img/5_background/layers/3_third_layer/2.png', -721, 1),
+            new BackgroundObject('img/5_background/layers/2_second_layer/2.png', -721, 1),
+            new BackgroundObject('img/5_background/layers/1_first_layer/2.png', -721, 1),
 
             new BackgroundObject('img/5_background/layers/air.png', -1, 0.7),
             new BackgroundObject('img/5_background/layers/3_third_layer/1.png', -1, 0.8),

@@ -225,7 +225,7 @@ class Character extends MoveableObject {
      * @returns {boolean}
      */
     canMoveLeft() {
-        return this.world.keyboard.LEFT && this.x > 0 && !this.isDead() && !this.characterKnockbackActive;
+        return this.world.keyboard.LEFT && this.x > 100 && !this.isDead() && !this.characterKnockbackActive;
     }
 
     /**

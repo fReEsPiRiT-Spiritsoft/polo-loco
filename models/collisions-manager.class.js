@@ -280,7 +280,9 @@ class CollisionManager {
         const char = this.world.character;
         let interval = setInterval(() => {
             char.jump(10);
-            char.moveLeft();
+            if (char.x > 100) {
+                char.moveLeft();
+            }
             enemy.energy = 0;
             setTimeout(() => enemy.markedForRemoval = true, 500);
         }, 16);

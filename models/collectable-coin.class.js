@@ -14,7 +14,7 @@ class CollectableCoin extends CollectableObject {
      */
      constructor(mapWidth = 7200, mapHeight = 280) {
         super().loadImage('img/7_statusbars/3_icons/icon_coin.png')
-        this.x = Math.random() * mapWidth;
+        this.x = 100 + Math.random() * (mapWidth - 100);
         this.y = Math.random() * mapHeight;
     }
 }

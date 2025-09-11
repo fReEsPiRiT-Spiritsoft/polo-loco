@@ -13,7 +13,7 @@ class CollectableBottle extends CollectableObject {
      */
     constructor(mapWidth = 7200) {
         super().loadImage('img/6_salsa_bottle/2_salsa_bottle_on_ground.png');
-        this.x = Math.random() * mapWidth;
+        this.x = 100 + Math.random() * (mapWidth - 100);
         this.y = 350; // Bodenhöhe anpassen, falls nötig
     }
 
