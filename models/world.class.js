@@ -7,12 +7,10 @@ class World {
     backgroundObjects = [];
     raindrops = [];
     lastRainSpawn = 0;
-
     ctx;
     canvas;
     keyboard;
     camera_x = 0;
-
     bossShiftActive = false;
     lastBossShiftActive = false;
     camTransitionActive = false;
@@ -22,30 +20,27 @@ class World {
     CAM_TRANSITION_DURATION = 450;
     CAM_LEFT_OFFSET = 100;
     CAM_RIGHT_OFFSET_EXTRA = 100;
-
     bossShiftMinHoldUntil = 2000;
-    cameraSmoothFactor = 0.12;
-    cameraSnapThreshold = 1.0;
-
     BOSS_SHIFT_MAX_DISTANCE = 1200;
     BOSS_SHIFT_ACTIVATE_DELTA = 60;
     BOSS_SHIFT_DEACTIVATE_DELTA = 20;
     BOSS_SHIFT_MIN_HOLD = 500;
-
     statusBar = new StatusBar();
     coinStatusBar = new CoinStatusBar();
     bottleStatusBar = new BottleStatusBar();
     throwableObjects = [];
     collectedBottles = 0;
     collectedCoins = 0;
-    cameraMode = 'char';
     characterKnockbackActive = false;
-
     lastHurtSound = 0;
     triggeredFightSound = false;
-
     debugHitboxes = false;
 
+    /**
+     * Creates a new World instance.
+     * @param {HTMLCanvasElement} canvas - The canvas element.
+     * @param {Keyboard} keyboard - The keyboard input handler.
+     */
     constructor(canvas, keyboard) {
         this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
@@ -63,20 +58,32 @@ class World {
 
     }
 
+    /**
+     * Unpauses the game.
+     */
     start() {
         this.paused = false;
     }
 
+    /**
+     * Sets the world reference for the character.
+     */
     setWorld() {
         this.character.world = this;
     }
 
+    /**
+     * Starts the main game logic interval.
+     */
     run() {
         this.locicInterval = setInterval(() => {
             this.collisionManager.update(); // <--- geändert
         }, 200);
     }
 
+    /**
+     * Updates the camera position and handles transitions.
+     */
     updateCamera() {
         this.evaluateBossCamera();
         if (this.bossShiftActive !== this.lastBossShiftActive) {
@@ -90,6 +97,9 @@ class World {
         this.camera_x = Math.round(this.camera_x);
     }
 
+    /**
+     * Plays the endboss fight sound once.
+     */
     triggerFightSound() {
         if (this.character.x > 5600 && this.triggeredFightSound === false) {
             AudioHub.FIGHT_FOR_ENDBOSS.play();
@@ -97,6 +107,9 @@ class World {
         }
     }
 
+    /**
+     * Starts the camera transition animation.
+     */
     startCameraTransition() {
         this.lastBossShiftActive = this.bossShiftActive;
         const target = this.bossShiftActive
@@ -108,6 +121,9 @@ class World {
         this.camTransitionActive = true;
     }
 
+    /**
+     * Updates the camera transition animation.
+     */
     updateCameraTransition() {
         const now = performance.now();
         let t = (now - this.camTransitionStart) / this.CAM_TRANSITION_DURATION;
@@ -119,12 +135,18 @@ class World {
         this.camera_x = this.camTransitionFrom + (this.camTransitionTo - this.camTransitionFrom) * eased;
     }
 
+    /**
+     * Sets the camera to the target position.
+     */
     setCameraTarget() {
         this.camera_x = this.bossShiftActive
             ? (-this.character.x + this.canvas.width - this.character.width - this.CAM_RIGHT_OFFSET_EXTRA)
             : (-this.character.x + this.CAM_LEFT_OFFSET);
     }
 
+    /**
+     * Checks if the boss camera should be active.
+     */
     evaluateBossCamera() {
         const boss = this.enemies.find(e => e instanceof ChickenEndboss && !e.isDead);
         if (!boss) {
@@ -134,6 +156,10 @@ class World {
         this.updateBossShiftState(boss);
     }
 
+    /**
+     * Updates the boss shift state.
+     * @param {ChickenEndboss} boss - The endboss instance.
+     */
     updateBossShiftState(boss) {
         const now = performance.now();
         const dx = this.character.x - boss.x;
@@ -147,17 +173,32 @@ class World {
         }
     }
 
+    /**
+     * Checks if boss shift should activate.
+     * @param {number} dx - Distance between character and boss.
+     * @param {number} absDx - Absolute distance between character and boss.
+     */
     shouldActivateBossShift(dx, absDx) {
         return !this.bossShiftActive &&
             dx > this.BOSS_SHIFT_ACTIVATE_DELTA &&
             absDx < this.BOSS_SHIFT_MAX_DISTANCE;
     }
 
+    /**
+     * Activates boss shift.
+     * @param {number} now - Current timestamp.
+     */
     activateBossShift(now) {
         this.bossShiftActive = true;
         this.bossShiftMinHoldUntil = now + this.BOSS_SHIFT_MIN_HOLD;
     }
 
+    /**
+     * Checks if boss shift should deactivate.
+     * @param {number} dx - Distance between character and boss.
+     * @param {number} absDx - Absolute distance between character and boss.
+     * @param {number} now - Current timestamp.
+     */
     checkBossShiftDeactivate(dx, absDx, now) {
         const holdDone = now >= this.bossShiftMinHoldUntil;
         const bossNoLongerLeft = dx < this.BOSS_SHIFT_DEACTIVATE_DELTA;
@@ -167,14 +208,9 @@ class World {
         }
     }
 
-    update() {
-        if (this.paused) return;
-        this.character.prevY = this.character.prevY ?? this.character.y;
-        this.character.vy = this.character.y - this.character.prevY;
-        this.checkMiniChickenStomp();
-        this.character.prevY = this.character.y;
-    }
-
+    /**
+     * Handles bottle throwing.
+     */
     checkThrowObjects() {
         if (this.canThrowBottle()) {
             const { startX, startY, facingLeft } = this.getBottleStartPosition();
@@ -183,10 +219,18 @@ class World {
         }
     }
 
+    /**
+     * Checks if bottle can be thrown.
+     * @returns {boolean}
+     */
     canThrowBottle() {
         return this.keyboard.D && this.collectedBottles > 0 && !this.throwCooldown;
     }
 
+    /**
+     * Gets the bottle start position.
+     * @returns {{startX: number, startY: number, facingLeft: boolean}}
+     */
     getBottleStartPosition() {
         const facingLeft = this.character.otherDirection;
         const startX = facingLeft
@@ -196,6 +240,12 @@ class World {
         return { startX, startY, facingLeft };
     }
 
+    /**
+     * Spawns a throwable bottle.
+     * @param {number} startX - The x position to spawn the bottle.
+     * @param {number} startY - The y position to spawn the bottle.
+     * @param {boolean} facingLeft - Direction the bottle is thrown.
+     */
     spawnThrowableBottle(startX, startY, facingLeft) {
         const bottle = new ThrowableObject(startX, startY, facingLeft);
         this.throwableObjects.push(bottle);
@@ -204,6 +254,9 @@ class World {
         this.throwCooldown = true;
     }
 
+    /**
+     * Handles bottle throw effects.
+     */
     handleBottleThrowEffects() {
         AudioHub.THROW.currentTime = 0;
         AudioHub.THROW.volume = 0.8;
@@ -211,6 +264,9 @@ class World {
         setTimeout(() => this.throwCooldown = false, 300);
     }
 
+    /**
+     * Draws camera and background.
+     */
     drawCamAndBackground() {
         this.updateCamera();
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -223,6 +279,9 @@ class World {
         this.ctx.translate(this.camera_x, 0);
     }
 
+    /**
+     * Draws all environment objects.
+     */
     drawEnvoiment() {
         this.addObjectsToMap(this.clouds);
         this.addObjectsToMap(this.level.collectableObjects);
@@ -231,6 +290,9 @@ class World {
         this.addObjectsToMap(this.throwableObjects);
     }
 
+    /**
+     * Draws raindrops.
+     */
     drawRaindrops() {
         const now = performance.now();
         if (this.enableRain) this.spawnRain(now);
@@ -238,6 +300,9 @@ class World {
         this.raindrops.forEach(r => r.draw(this.ctx));
     }
 
+    /**
+     * Draws dark overlay for rain.
+     */
     drawDarkOverlay() {
         if (!this.enableRain) return;
         this.ctx.save();
@@ -247,6 +312,9 @@ class World {
         this.ctx.restore();
     }
 
+    /**
+     * Draws all status bars.
+     */
     drawStatusBars() {
         this.addToMap(this.statusBar);
         this.addToMap(this.coinStatusBar);
@@ -254,6 +322,9 @@ class World {
         this.bottleStatusBar.draw(this.ctx, this.collectedBottles);
     }
 
+    /**
+     * Draws the endboss status bar.
+     */
     drawEnbossStatusBar() {
         this.enemies.forEach(enemy => {
             if (enemy instanceof ChickenEndboss && enemy.statusBar) {
@@ -268,6 +339,9 @@ class World {
         });
     }
 
+    /**
+     * Draws debug hitboxes.
+     */
     drawHitBoxes() {
         if (!this.debugHitboxes) return;
         this.ctx.save();
@@ -278,6 +352,9 @@ class World {
         this.ctx.restore();
     }
 
+    /**
+     * Main draw loop.
+     */
     draw() {
         this.drawCamAndBackground();
         this.drawEnvoiment();
@@ -293,12 +370,20 @@ class World {
         this.triggerFightSound();
     }
 
+    /**
+     * Adds multiple objects to the map.
+     * @param {Array} objects - The objects to add.
+     */
     addObjectsToMap(objects) {
         objects.forEach(o => {
             this.addToMap(o);
         });
     }
 
+    /**
+     * Adds a single object to the map.
+     * @param {DrawableObject} mo - The object to add.
+     */
     addToMap(mo) {
         if (mo instanceof BackgroundObject) return;
         if (mo.otherDirection) this.flipImage(mo);
@@ -306,6 +391,10 @@ class World {
         if (mo.otherDirection) this.flipImageBack(mo);
     }
 
+    /**
+     * Flips an image horizontally.
+     * @param {DrawableObject} mo - The object to flip.
+     */
     flipImage(mo) {
         this.ctx.save();
         this.ctx.translate(mo.width, 0);
@@ -313,11 +402,19 @@ class World {
         mo.x = mo.x * -1;
     }
 
+    /**
+     * Restores image after flipping.
+     * @param {DrawableObject} mo - The object to restore.
+     */
     flipImageBack(mo) {
         this.ctx.restore();
         mo.x = mo.x * -1;
     }
 
+    /**
+     * Spawns new raindrops.
+     * @param {number} now - Current timestamp.
+     */
     spawnRain(now) {
         if (now - this.lastRainSpawn < 80) return;
         this.lastRainSpawn = now;

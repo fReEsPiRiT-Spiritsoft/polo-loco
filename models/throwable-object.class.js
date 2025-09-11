@@ -1,5 +1,8 @@
 isSplashing = false;
 
+/**
+ * ThrowableObject: Represents a throwable bottle in the game.
+ */
 class ThrowableObject extends MoveableObject {
 
 
@@ -21,6 +24,12 @@ class ThrowableObject extends MoveableObject {
 
     ];
 
+    /**
+     * Creates a new ThrowableObject.
+     * @param {number} x - The x position.
+     * @param {number} y - The y position.
+     * @param {boolean} [facingLeft=false] - Direction of the throw.
+     */
     constructor(x, y, facingLeft = false) {
         super().loadImage('img/6_salsa_bottle/salsa_bottle.png')
         this.loadImages(this.IMAGES_ROTATE_BOTTLE);
@@ -34,7 +43,9 @@ class ThrowableObject extends MoveableObject {
 
     }
 
-
+    /**
+     * Starts the throw movement and animation.
+     */
     throw() {
         this.speedY = 12;
         this.applyGravity();
@@ -48,6 +59,9 @@ class ThrowableObject extends MoveableObject {
         }, 25);
     }
 
+    /**
+     * Handles the throw and splash animation.
+     */
     throwAnimation() {
         let splashStarted = false;
         let splashSoundPlayed = false;
@@ -68,6 +82,9 @@ class ThrowableObject extends MoveableObject {
         }, 100);
     }
 
+    /**
+     * Starts the splash animation and removal.
+     */
     startSplash() {
         if (this.isSplashing) return; // Splash nur einmal starten!
         this.isSplashing = true;
@@ -83,6 +100,9 @@ class ThrowableObject extends MoveableObject {
         this.splashSound();
     }
 
+    /**
+     * Plays the splash sound effect.
+     */
     splashSound(){
         AudioHub.BOTTLE_SPLASH.volume = 0.3;
         AudioHub.BOTTLE_SPLASH.currentTime = 0;
