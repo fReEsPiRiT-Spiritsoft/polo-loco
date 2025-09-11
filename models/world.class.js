@@ -1,4 +1,3 @@
-
 class World {
     paused = true;
     character = new Character();
@@ -55,9 +54,11 @@ class World {
         this.enemies = level1.enemies;
         this.clouds = level1.clouds;
         this.backgroundObjects = level1.backgroundObjects;
+
+        this.collisionManager = new CollisionManager(this); // <--- NEU
         this.draw();
         this.setWorld();
-        this.checkCollisions();
+        this.collisionManager.update(); // <--- statt this.checkCollisions()
         this.run();
 
     }
@@ -72,7 +73,7 @@ class World {
 
     run() {
         this.locicInterval = setInterval(() => {
-            this.checkCollisions();
+            this.collisionManager.update(); // <--- geändert
         }, 200);
     }
 
@@ -166,202 +167,12 @@ class World {
         }
     }
 
-
-    checkCollisions() {
+    update() {
         if (this.paused) return;
         this.character.prevY = this.character.prevY ?? this.character.y;
         this.character.vy = this.character.y - this.character.prevY;
-        this.checkChickenStomp();
-        this.checkEnemyCollision();
-        this.checkCollectableCollision();
-        this.checkEnemyBottleCollision();
         this.checkMiniChickenStomp();
         this.character.prevY = this.character.y;
-    }
-
-    checkMiniChickenStomp() {
-        this.enemies.forEach(enemy => {
-            if (this.shouldMiniChickenStomp(enemy)) {
-                this.handleMiniChickenStomp(enemy);
-                // AudioHub.MINI_CHICKEN_EXPLODE2.pause();
-                AudioHub.MINI_CHICKEN_EXPLODE2.currentTime = 0;
-                AudioHub.MINI_CHICKEN_EXPLODE2.play();
-            }
-        });
-    }
-
-    shouldMiniChickenStomp(enemy) {
-        return enemy instanceof MiniChicken &&
-            !this.character.isDead() &&
-            this.character.isColliding(enemy) &&
-            enemy.energy > 0;
-    }
-
-    handleMiniChickenStomp(enemy) {
-        this.characterKnockbackActive = true;
-        if (enemy.x < this.character.x) {
-            this.knockbackRight(enemy);
-        } else {
-            this.knockbackLeft(enemy);
-        }
-        this.character.hit();
-        this.statusBar.setPercentage(this.character.energy);
-    }
-
-    knockbackRight(enemy) {
-        let interval = setInterval(() => {
-            this.character.jump(10);
-            this.character.moveRight();
-            enemy.energy = 0;
-            setTimeout(() => enemy.markedForRemoval = true, 500);
-        }, 16);
-        setTimeout(() => {
-            clearInterval(interval);
-            this.characterKnockbackActive = false;
-        }, 1500);
-    }
-
-    knockbackLeft(enemy) {
-        let interval = setInterval(() => {
-            this.character.jump(10);
-            this.character.moveLeft();
-            enemy.energy = 0;
-            setTimeout(() => enemy.markedForRemoval = true, 500);
-        }, 16);
-        setTimeout(() => {
-            clearInterval(interval);
-            this.characterKnockbackActive = false;
-        }, 1500);
-    }
-
-    checkEnemyCollision() {
-        this.level.enemies.forEach((enemy) => {
-            if (this.character.isColliding(enemy) && enemy.energy > 0) {
-                this.character.hit();
-                this.statusBar.setPercentage(this.character.energy);
-                const now = performance.now();
-                if (now - this.lastHurtSound > 1000) {
-                    AudioHub.PEPE_HURT.currentTime = 0;
-                    AudioHub.PEPE_HURT.play();
-                    this.lastHurtSound = now;
-                }
-            }
-        });
-    }
-
-    checkChickenStomp() {
-        this.enemies.forEach(enemy => {
-            if (enemy instanceof Chicken && enemy.energy > 0 && this.character.isColliding(enemy) && this.isStompTopHit(this.character, enemy)) {
-                enemy.energy = 0;
-                AudioHub.CHICKEN_STOMP.currentTime = 0;
-                AudioHub.CHICKEN_STOMP.volume = 1;
-                AudioHub.CHICKEN_STOMP.play();
-                this.character.jump(20);
-                enemy.animateDeath && enemy.animateDeath();
-                setTimeout(() => enemy.markedForRemoval = true, 800);
-            }
-        });
-        this.enemies = this.enemies.filter(e => !e.markedForRemoval);
-    }
-
-    isStompTopHit(char, enemy) {
-        const charPrevBottom = (char.prevY ?? char.y) + char.height;
-        const charNowBottom = char.y + char.height;
-        const enemyTop = enemy.y;
-        const falling = char.vy > 0;
-        return falling && charPrevBottom <= enemyTop && charNowBottom >= enemyTop;
-    }
-
-    checkEnemyBottleCollision() {
-        this.throwableObjects.forEach(bottle => {
-            if (bottle.markedForRemoval) return;
-            this.enemies.forEach(enemy => {
-                if (enemy.energy > 0 && bottle.isColliding(enemy) && !bottle.markedForRemoval) {
-                    this.handleBottleHit(enemy, bottle);
-                    bottle.startSplash();
-                }
-            });
-        });
-        this.enemies = this.enemies.filter(e => !e.markedForRemoval);
-        this.throwableObjects = this.throwableObjects.filter(b => !b.markedForRemoval);
-    }
-
-    handleBottleHit(enemy, bottle) {
-        if (enemy instanceof Chicken || enemy instanceof MiniChicken) {
-            this.handleChickenBottleHit(enemy, bottle);
-        } else if (enemy instanceof ChickenEndboss) {
-            this.handleEndbossBottleHit(enemy, bottle);
-        }
-    }
-
-    handleChickenBottleHit(enemy, bottle) {
-        enemy.energy = 0;
-        this.playChickenStompSound();
-        enemy.animateDeath && enemy.animateDeath();
-        if (enemy instanceof MiniChicken) {
-            this.playMiniChickenExplodeSound();
-        }
-        bottle.startSplash();
-        this.removeChickenAndBottleLater(enemy, bottle);
-    }
-
-    playChickenStompSound() {
-        AudioHub.CHICKEN_STOMP.currentTime = 0;
-        AudioHub.CHICKEN_STOMP.volume = 0.1;
-        AudioHub.CHICKEN_STOMP.play();
-    }
-
-    playMiniChickenExplodeSound() {
-        AudioHub.MINI_CHICKEN_EXPLODE2.currentTime = 0;
-        AudioHub.MINI_CHICKEN_EXPLODE2.play();
-    }
-
-    removeChickenAndBottleLater(enemy, bottle) {
-        setTimeout(() => {
-            enemy.markedForRemoval = true;
-            bottle.markedForRemoval = true;
-        }, bottle.BOTTLE_SPLASH.length * 100);
-    }
-
-    handleEndbossBottleHit(enemy, bottle) {
-        enemy.takeBottleHit();
-        setTimeout(() => {
-            bottle.markedForRemoval = true;
-        }, bottle.BOTTLE_SPLASH.length * 100);
-    }
-
-    checkCollectableCollision() {
-        this.level.collectableObjects = this.level.collectableObjects.filter(obj => {
-            if (this.character.isColliding(obj)) {
-                this.handleCollectable(obj);
-                return false;
-            }
-            return true;
-        });
-    }
-
-    handleCollectable(obj) {
-        if (obj instanceof CollectableCoin) {
-            this.collectCoin();
-        }
-        if (obj instanceof CollectableBottle) {
-            this.collectBottle();
-        }
-    }
-
-    collectCoin() {
-        this.collectedCoins++;
-        AudioHub.COIN_COLLECT.currentTime = 0;
-        AudioHub.COIN_COLLECT.play();
-        this.coinStatusBar.setPercentage(this.collectedCoins / 12 * 100);
-    }
-
-    collectBottle() {
-        this.collectedBottles++;
-        AudioHub.BOTTLE_COLLECT.currentTime = 0;
-        AudioHub.BOTTLE_COLLECT.volume = 0.4;
-        AudioHub.BOTTLE_COLLECT.play();
-        this.bottleStatusBar.setPercentage(this.collectedBottles / 20 * 100);
     }
 
     checkThrowObjects() {
