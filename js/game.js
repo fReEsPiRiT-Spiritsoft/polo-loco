@@ -3,7 +3,20 @@ let world;
 let keyboard = new Keyboard();
 let inputManager;
 let selectedDifficulty = 'medium';
-let isMuted = false;
+let isMuted = localStorage.getItem('isMuted') === '1';
+
+window.addEventListener('DOMContentLoaded', () => {
+
+    AudioHub.allSounds.forEach(sound => sound.muted = isMuted);
+    const btnMute = document.getElementById('btnMute');
+    if (btnMute) {
+        if (isMuted) {
+            btnMute.classList.add('muted');
+        } else {
+            btnMute.classList.remove('muted');
+        }
+    }
+});
 
 /**
  * init: Initializes the canvas and disables right-click context menu.
@@ -137,6 +150,7 @@ function playRainyAudio() {
  */
 function toggleMute() {
     isMuted = !isMuted;
+    localStorage.setItem('isMuted', isMuted ? '1' : '0');
     AudioHub.allSounds.forEach(sound => sound.muted = isMuted);
     const muteIcon = document.getElementById('muteIcon');
     const btnMute = document.getElementById('btnMute');
@@ -182,7 +196,7 @@ function restartGame() {
     initLevel1(settings.darkClouds);
     world = new World(canvas, keyboard, level1);
     world.start();
-    inputManager.setWorld(world); // neue World setzen
+    inputManager.setWorld(world);
     const endboss = world.enemies.find(e => e instanceof ChickenEndboss);
     if (endboss) {
         endboss.energy = settings.endbossEnergy;
@@ -248,43 +262,89 @@ function toggleFullscreen() {
 function resizeCanvasToFullscreen() {
     const gameDiv = document.querySelector('.game');
     if (document.fullscreenElement === gameDiv) {
-        gameDiv.style.width = '100vw';
-        gameDiv.style.height = '100vh';
-        gameDiv.style.position = 'relative';
-        canvas.width = 720;
-        canvas.height = 480;
-        const aspect = 720 / 480;
-        const vw = window.innerWidth;
-        const vh = window.innerHeight;
-        let targetW = vw;
-        let targetH = targetW / aspect;
-        if (targetH > vh) {
-            targetH = vh;
-            targetW = targetH * aspect;
-        }
-        const scaleFactor = 0.98;
-        targetW *= scaleFactor;
-        targetH *= scaleFactor;
-        canvas.style.position = 'absolute';
-        canvas.style.width = targetW + 'px';
-        canvas.style.height = targetH + 'px';
-        canvas.style.left = '50%';
-        canvas.style.top = '50%';
-        canvas.style.transform = 'translate(-50%, -50%)';
-        canvas.style.background = '#000';
+        setGameDivFullscreen(gameDiv);
+        setCanvasFullscreen();
+        centerCanvas();
     } else {
-        gameDiv.style.width = '720px';
-        gameDiv.style.height = '480px';
-        canvas.width = 720;
-        canvas.height = 480;
-        canvas.style.position = 'static';
-        canvas.style.width = '100%';
-        canvas.style.height = '100%';
-        canvas.style.left = '';
-        canvas.style.top = '';
-        canvas.style.transform = '';
-        canvas.style.background = '';
+        resetGameDiv(gameDiv);
+        resetCanvas();
     }
+}
+
+/**
+ * setGameDivFullscreen: Sets the game container to fullscreen size and position.
+ */
+function setGameDivFullscreen(gameDiv) {
+    gameDiv.style.width = '100vw';
+    gameDiv.style.height = '100vh';
+    gameDiv.style.position = 'relative';
+}
+
+/**
+ * setCanvasFullscreen: Sets the canvas size and position for fullscreen mode.
+ */
+
+function setCanvasFullscreen() {
+    canvas.width = 720;
+    canvas.height = 480;
+    const { targetW, targetH } = calculateCanvasSize();
+    canvas.style.position = 'absolute';
+    canvas.style.width = targetW + 'px';
+    canvas.style.height = targetH + 'px';
+}
+
+/**
+ * calculateCanvasSize: Calculates the optimal canvas size for the current window.
+ */
+
+function calculateCanvasSize() {
+    const aspect = 720 / 480;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    let targetW = vw;
+    let targetH = targetW / aspect;
+    if (targetH > vh) {
+        targetH = vh;
+        targetW = targetH * aspect;
+    }
+    const scaleFactor = 0.98;
+    targetW *= scaleFactor;
+    targetH *= scaleFactor;
+    return { targetW, targetH };
+}
+
+/**
+ * centerCanvas: Centers the canvas in the viewport and sets background.
+ */
+function centerCanvas() {
+    canvas.style.left = '50%';
+    canvas.style.top = '50%';
+    canvas.style.transform = 'translate(-50%, -50%)';
+    canvas.style.background = '#000';
+}
+
+/**
+ * resetGameDiv: Resets the game container to default size and position.
+ */
+function resetGameDiv(gameDiv) {
+    gameDiv.style.width = '720px';
+    gameDiv.style.height = '480px';
+    gameDiv.style.position = 'static';
+}
+
+/**
+ * resetCanvas: Resets the canvas to default size and style.
+ */
+function resetCanvas() {
+    canvas.width = 720;
+    canvas.height = 480;
+    canvas.style.position = 'static';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.left = '';
+    canvas.style.top = '';
+    canvas.style.transform = '';
+    canvas.style.background = '';
 }
 
 /**

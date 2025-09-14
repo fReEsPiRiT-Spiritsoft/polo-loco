@@ -63,6 +63,7 @@ class CollisionManager {
                 AudioHub.CHICKEN_STOMP.volume = 1;
                 AudioHub.CHICKEN_STOMP.play();
                 this.world.character.jump(20);
+                this.world.character.startJumpAnimation();
                 enemy.animateDeath && enemy.animateDeath();
                 setTimeout(() => enemy.markedForRemoval = true, 800);
             }

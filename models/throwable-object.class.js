@@ -5,7 +5,6 @@ isSplashing = false;
  */
 class ThrowableObject extends MoveableObject {
 
-
     IMAGES_ROTATE_BOTTLE = [
         'img/6_salsa_bottle/bottle_rotation/1_bottle_rotation.png',
         'img/6_salsa_bottle/bottle_rotation/2_bottle_rotation.png',
@@ -86,7 +85,7 @@ class ThrowableObject extends MoveableObject {
      * Starts the splash animation and removal.
      */
     startSplash() {
-        if (this.isSplashing) return; // Splash nur einmal starten!
+        if (this.isSplashing) return;
         this.isSplashing = true;
         this.currentImage = 0;
         let splashInterval = setInterval(() => {
@@ -108,5 +107,4 @@ class ThrowableObject extends MoveableObject {
         AudioHub.BOTTLE_SPLASH.currentTime = 0;
         AudioHub.BOTTLE_SPLASH.play();
     }
-
 }

@@ -6,7 +6,7 @@ class InputManager {
      */
     constructor(keyboard, world) {
         this.keyboard = keyboard;
-        this.world = world; // kann anfangs undefined sein, später mit setWorld gesetzt
+        this.world = world;
         this.lastThrowTime = 0;
         this.setupAll();
     }

@@ -1,12 +1,11 @@
 /**
  * Level: Represents a game level, containing all enemies, clouds, background objects, and collectables.
  */
-class Level{
+class Level {
     enemies;
     clouds;
     backgroundObjects;
     collectableObjects;
-
 
     /**
      * Constructs a new Level instance with the given game objects.
@@ -16,12 +15,9 @@ class Level{
      * @param {Array} collectableObjects - Array of collectable objects in the level.
      */
     constructor(enemies, clouds, backgroundObjects, collectableObjects) {
-    this.enemies = enemies;
-    this.clouds = clouds;  
-    this.backgroundObjects = backgroundObjects;
-    this.collectableObjects = collectableObjects;
-    
-}
-
-
+        this.enemies = enemies;
+        this.clouds = clouds;
+        this.backgroundObjects = backgroundObjects;
+        this.collectableObjects = collectableObjects;
+    }
 }

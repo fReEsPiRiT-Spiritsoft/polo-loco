@@ -50,10 +50,10 @@ class World {
         this.clouds = level1.clouds;
         this.backgroundObjects = level1.backgroundObjects;
 
-        this.collisionManager = new CollisionManager(this); // <--- NEU
+        this.collisionManager = new CollisionManager(this);
         this.draw();
         this.setWorld();
-        this.collisionManager.update(); // <--- statt this.checkCollisions()
+        this.collisionManager.update();
         this.run();
 
     }
@@ -77,7 +77,7 @@ class World {
      */
     run() {
         this.locicInterval = setInterval(() => {
-            this.collisionManager.update(); // <--- geändert
+            this.collisionManager.update();
         }, 200);
     }
 
@@ -250,7 +250,7 @@ class World {
         const bottle = new ThrowableObject(startX, startY, facingLeft);
         this.throwableObjects.push(bottle);
         this.collectedBottles--;
-        this.bottleStatusBar.setPercentage(this.collectedBottles / 20 * 100); // <-- Prozent aktualisieren!
+        this.bottleStatusBar.setPercentage(this.collectedBottles / 20 * 100);
         this.throwCooldown = true;
     }
 
@@ -345,7 +345,7 @@ class World {
     drawHitBoxes() {
         if (!this.debugHitboxes) return;
         this.ctx.save();
-        this.ctx.translate(this.camera_x, 0); // gleiche Translation wie für Sprites
+        this.ctx.translate(this.camera_x, 0);
         this.character.drawHitBox(this.ctx, 'rgba(0,255,0,0.25)');
         this.enemies.forEach(e => e.drawHitBox && e.drawHitBox(this.ctx, 'rgba(255,0,0,0.25)'));
         this.throwableObjects.forEach(o => o.drawHitBox && o.drawHitBox(this.ctx, 'rgba(0,0,255,0.25)'));

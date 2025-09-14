@@ -64,13 +64,13 @@ class BottleStatusBar extends DrawableObject {
         super.draw(ctx); 
         if (collectedBottles > 0) {
             ctx.save();
-            ctx.font = "bold 28px Arial";
-            ctx.fillStyle = "red";
+            ctx.font = "bold 15px Rye";
+            ctx.fillStyle = "bc8352";
             ctx.textAlign = "center";
             ctx.fillText(
                 collectedBottles,
                 this.x + this.width / 2,
-                this.y + this.height / 1.5
+                this.y + this.height / 1.3
             );
             ctx.restore();
         }

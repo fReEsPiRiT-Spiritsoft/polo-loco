@@ -1,3 +1,50 @@
+@font-face {
+    font-family: 'Rye';
+    src: url('fonts/Rye/Rye-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Libertinus Serif';
+    src: url('fonts/Libertinus_Serif/LibertinusSerif-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Libertinus Serif';
+    src: url('fonts/Libertinus_Serif/LibertinusSerif-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Libertinus Serif';
+    src: url('fonts/Libertinus_Serif/LibertinusSerif-Italic.ttf') format('truetype');
+    font-weight: normal;
+    font-style: italic;
+}
+@font-face {
+    font-family: 'Libertinus Serif';
+    src: url('fonts/Libertinus_Serif/LibertinusSerif-BoldItalic.ttf') format('truetype');
+    font-weight: bold;
+    font-style: italic;
+}
+@font-face {
+    font-family: 'Libertinus Serif';
+    src: url('fonts/Libertinus_Serif/LibertinusSerif-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Libertinus Serif';
+    src: url('fonts/Libertinus_Serif/LibertinusSerif-SemiBoldItalic.ttf') format('truetype');
+    font-weight: 600;
+    font-style: italic;
+}
+
+
+
+
 html,
 body {
     margin: 0;
@@ -335,6 +382,8 @@ canvas {
     image-rendering: pixelated;
 }
 
+
+
 /* Start-/UI-Elemente skalieren mit */
 #startscreen,
 #endscreen,
@@ -406,13 +455,14 @@ canvas {
 }
 
 .touch-btn {
-    background: rgba(255,255,255,0.13);
+    background: rgb(250 100 0 / 54%);
     border: none;
     border-radius: 16px;
-    padding: 8px 16px;
+    padding: 2px 7px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.18);
     pointer-events: auto;
     margin: 0;
+    margin-right: 30px;
 }
 
 .touch-btn img {

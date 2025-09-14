@@ -10,6 +10,8 @@ class Character extends MoveableObject {
     lastAction = 0;
     longIdleDelay = 5000;
     wasAboveGround = false;
+    jumpAnimationInterval = null;
+    jumpFrameIndex = 0;
 
 
     IMAGES_IDLE = [
@@ -90,7 +92,6 @@ class Character extends MoveableObject {
         this.applyGravity();
         this.lastAction = performance.now();
         this.animate();
-        // Hitbox enger als das ganze Sprite
         this.hitbox = {
             offsetX: 15,
             offsetY: 120,
@@ -154,6 +155,18 @@ class Character extends MoveableObject {
      */
     handleMovement() {
         let moved = false;
+        moved = this.handleHorizontalMovement() || moved;
+        moved = this.handleJump() || moved;
+        if (moved) this.markAction();
+        return moved;
+    }
+
+    /**
+     * Handles left and right movement.
+     * @returns {boolean} true if moved horizontally
+     */
+    handleHorizontalMovement() {
+        let moved = false;
         if (this.canMoveRight()) {
             this.moveRight();
             this.otherDirection = false;
@@ -164,14 +177,22 @@ class Character extends MoveableObject {
             this.otherDirection = true;
             moved = true;
         }
+        return moved;
+    }
+
+    /**
+     * Handles jumping logic.
+     * @returns {boolean} true if jump was performed
+     */
+    handleJump() {
         if (this.canJump()) {
             this.jump(20);
+            this.startJumpAnimation();
             AudioHub.PEPE_JUMP.currentTime = 0;
             AudioHub.PEPE_JUMP.play();
-            moved = true;
+            return true;
         }
-        if (moved) this.markAction();
-        return moved;
+        return false;
     }
 
     /**
@@ -251,13 +272,48 @@ class Character extends MoveableObject {
             AudioHub.PEPE_SLEEP.pause();
             AudioHub.PEPE_SLEEP.currentTime = 0;
         }
-
         if (this.isHurt()) return this.playAnimation(this.IMAGES_HURT);
         if (this.isDead()) return this.playDeathSequence();
-        if (this.isAboveGround()) return this.playAnimation(this.IMAGES_JUMPING);
+        this.updateMovementAndIdleAnimation();
+    }
+
+    /**
+    * updateMovementAndIdleAnimation: Handles jump, walk, idle and long idle animations.
+    * Shows the last jump frame while in the air, resets jump frame index on landing,
+     * and plays the appropriate animation based on the character's state.
+    */
+    updateMovementAndIdleAnimation() {
+        if (this.jumpAnimationInterval) return;
+        if (this.isAboveGround()) {
+            this.img = this.imageCache[this.IMAGES_JUMPING[this.IMAGES_JUMPING.length - 1]];
+            return;
+        } else if (this.jumpFrameIndex !== 0) {
+            this.jumpFrameIndex = 0;
+        }
         if (this.isWalking()) return this.playAnimation(this.IMAGES_WALKING);
         if (this.isLongIdle()) return this.handleLongIdle();
         this.handleIdle();
+    }
+
+    /**
+     * startJumpAnimation: Starts the jump animation interval.
+     */
+    startJumpAnimation() {
+        if (this.jumpAnimationInterval) {
+            clearInterval(this.jumpAnimationInterval);
+            this.jumpAnimationInterval = null;
+        }
+        this.jumpFrameIndex = 0;
+        this.img = this.imageCache[this.IMAGES_JUMPING[0]];
+        this.jumpAnimationInterval = setInterval(() => {
+            if (this.jumpFrameIndex < this.IMAGES_JUMPING.length - 1) {
+                this.jumpFrameIndex++;
+                this.img = this.imageCache[this.IMAGES_JUMPING[this.jumpFrameIndex]];
+            } else {
+                clearInterval(this.jumpAnimationInterval);
+                this.jumpAnimationInterval = null;
+            }
+        }, 200);
     }
 
     /**
@@ -288,7 +344,6 @@ class Character extends MoveableObject {
             AudioHub.PEPE_SLEEP.pause();
             AudioHub.PEPE_SLEEP.currentTime = 0;
         }
-        AudioHub.PEPE_SLEEP.pause();
         this.playAnimation(this.IMAGES_IDLE);
     }
 

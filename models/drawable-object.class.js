@@ -55,7 +55,6 @@ class DrawableObject {
     draw(ctx) {
         this.ensureFallback();
         if (!this.img) return;
-        // Wenn echtes Image noch lädt -> (complete == false) einfach überspringen
         if (this.img instanceof HTMLImageElement && !this.img.complete) return;
         ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
     }

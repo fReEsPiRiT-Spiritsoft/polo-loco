@@ -60,12 +60,12 @@ class AudioHub {
      * @param {string} instrumentId - The DOM id of the instrument image to activate.
      */
     static playOne(sound, instrumentId) {
-        if (sound.readyState == 4) { 
-            sound.volume = 0.2;  
-            sound.currentTime = 0; 
-            sound.play(); 
-            const instrumentImg = document.getElementById(instrumentId);  
-            instrumentImg.classList.add('active');  
+        if (sound.readyState === 4 && sound.paused) {
+            sound.volume = 0.2;
+            sound.currentTime = 0;
+            sound.play().catch(() => { }); 
+            const instrumentImg = document.getElementById(instrumentId);
+            if (instrumentImg) instrumentImg.classList.add('active');
         }
     }
 
@@ -74,11 +74,14 @@ class AudioHub {
      */
     static stopAll() {
         AudioHub.allSounds.forEach(sound => {
-            sound.pause();
+            if (!sound.paused) {
+                sound.pause();
+            }
         });
-        document.getElementById('volume').value = 0.2; 
-        const instrumentImages = document.querySelectorAll('.sound_img'); 
-        instrumentImages.forEach(img => img.classList.remove('active')); 
+        const volumeElem = document.getElementById('volume');
+        if (volumeElem) volumeElem.value = 0.2;
+        const instrumentImages = document.querySelectorAll('.sound_img');
+        instrumentImages.forEach(img => img.classList.remove('active'));
     }
 
     /**
@@ -87,9 +90,11 @@ class AudioHub {
      * @param {string} instrumentId - The DOM id of the instrument image to deactivate.
      */
     static stopOne(sound, instrumentId) {
-        sound.pause();  
-        const instrumentImg = document.getElementById(instrumentId); 
-        instrumentImg.classList.remove('active'); 
+        if (!sound.paused) {
+            sound.pause();
+        }
+        const instrumentImg = document.getElementById(instrumentId);
+        if (instrumentImg) instrumentImg.classList.remove('active');
     }
 
 
@@ -98,9 +103,9 @@ class AudioHub {
      * @param {HTMLAudioElement[]} volumeSlider - Array of audio elements to set the volume for.
      */
     static objSetVolume(volumeSlider) {
-        let volumeValue = document.getElementById('volume').value; 
+        let volumeValue = document.getElementById('volume').value;
         volumeSlider.forEach(sound => {
-            sound.volume = volumeValue;  
+            sound.volume = volumeValue;
         });
     }
 }

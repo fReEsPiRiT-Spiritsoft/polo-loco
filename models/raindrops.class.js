@@ -9,7 +9,7 @@ class Raindrop {
      * @param {number} y - The initial y position of the raindrop.
      */
     constructor(x, y) {
-        this.x = x + (Math.random() * 120 - 60); // leichte Streuung
+        this.x = x + (Math.random() * 120 - 60);
         this.y = y + 40;
         this.speedY = 6 + Math.random() * 3;
         this.alpha = 0.9;
@@ -24,7 +24,7 @@ class Raindrop {
     update() {
         this.y += this.speedY;
         this.alpha -= 0.01;
-        return this.alpha > 0 && this.y < 480; // true = aktiv
+        return this.alpha > 0 && this.y < 480;
     }
 
     /**
